@@ -469,18 +469,38 @@ def ConnectWireToClosest():
       print "Original number of edges is %d" % original_edge_count
       #####
       # 対象頂点集合の取得
+      def getSet(asm, key):
+        if "." in key:
+          i, n = key.split(".")
+          if asm.instances.has_key(i):
+            ins = asm.instances[i]
+            if ins.sets.has_key(n):
+              return asm.instances[i].sets[n]
+        if asm.sets.has_key(key):
+          return asm.sets[key]
+        return None
+      #
       if a.sets.has_key("FROM"):
-        origin = a.sets["FROM"].vertices
-        print "Number of vertices in the FROM set is %d" % (len(origin), )
+        from_key = "FROM"
       else:
-        print "エラー：アセンブリにワイヤ探索起点の集合「FROM」が見つかりません．"
+        from_key = getInput("起点となる集合名を指定してください")
+      from_set = getSet(a, from_key)
+      if from_set is None:
+        print "エラー：アセンブリにワイヤ探索起点の集合「%s」が見つかりません．" % (from_key,)
         return
+      origin = from_set.vertices
+      print "Number of vertices in the %s set is %d" % (from_key, len(origin))
+      #
       if a.sets.has_key("TO"):
-        dest = a.sets["TO"].vertices
-        print "Number of vertices in the TO set is %d" % (len(dest), )
+        to_key = "TO"
       else:
-        print "エラー：アセンブリにワイヤ接続先候補頂点を含む集合「TO」が見つかりません．"
+        to_key = getInput("終点の候補となる集合名を指定してください")
+      to_set = getSet(a, to_key)
+      if to_set is None:
+        print "エラー：アセンブリにワイヤ接続先候補頂点を含む集合「%s」が見つかりません．" % (to_key,)
         return
+      dest = to_set.vertices
+      print "Number of vertices in the %s set is %d" % (to_key, len(dest) )
       if a.sets.has_key("CONNECT_FROM_TO"):
         print "エラー： 作成したワイヤを保存する集合「CONNECT_FROM_TO」がすでに存在します．削除するか名前を変更して下さい．"
         return
