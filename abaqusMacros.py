@@ -45,6 +45,14 @@ import __main__
 # def Sum(newName=""):
 # def RemoveAll():
 
+def B_AddPrefixToTempXYandRetern():
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    import extract
+    B_AddPrefixToTempXY()
+    session.viewports[session.currentViewportName].odbDisplay.display.setValues(plotState=(UNDEFORMED, ))
+    session.viewports[session.currentViewportName].setValues(displayedObject=extract.currentOdb())
 
 def B_AddPrefixToTempXY():
     import visualization
