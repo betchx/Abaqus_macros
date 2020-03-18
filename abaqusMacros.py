@@ -46,7 +46,7 @@ import __main__
 # def RemoveAll():
 
 
-def AddPrefixToTempXY():
+def B_AddPrefixToTempXY():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -57,7 +57,7 @@ def AddPrefixToTempXY():
         session.xyDataObjects[xy].setValues(legendLabel=pre+xy)
         session.xyDataObjects.changeKey(xy, pre + xy)
 
-def RemoveTempXYs():
+def B_RemoveTempXYs():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -65,7 +65,7 @@ def RemoveTempXYs():
       if xy[0] == '_':
         del session.xyDataObjects[xy]
 
-def SumTempXY():
+def E_SumTempXY():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -83,7 +83,7 @@ def SumTempXY():
     session.viewports[session.currentViewportName].setValues(displayedObject=extract.currentOdb())
 
 
-def DeformAnimate():
+def D_DeformAnimate():
   import visualization
   import xyPlot
   import displayGroupOdbToolset as dgo
@@ -108,7 +108,7 @@ def DeformAnimate():
   session.animationController.play(duration=UNLIMITED)
 
 
-def ExtractStressHistoryFromFieldByElset():
+def E_ExtractStressHistoryFromFieldByElset():
   import visualization
   import xyPlot
   import displayGroupOdbToolset as dgo
@@ -136,7 +136,7 @@ def ExtractStressHistoryFromFieldByElset():
     targets.append( session.xyDataObjects[key] )
   session.writeXYReport(fileName=rpt, appendMode=OFF, xyData=tuple(targets))
 
-def ZZ_CheckPath():
+def checkPath():
   msg = ""
   import sys
   for p in sys.path:
@@ -158,11 +158,11 @@ def ZZ_CheckPath():
   #  getInput(msg)
 
 
-def Precision4():
+def C_Precision4():
     import sketch
     mdb.models[0].sketches['__profile__'].sketchOptions.setValues(decimalPlaces=4)
 
-def RotateX90Neg():
+def A_RotateX90Neg():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -170,7 +170,7 @@ def RotateX90Neg():
         mode=MODEL)
 
 
-def SaveAllPlotAsXYXYForamt():
+def E_SaveAllPlotAsXYXYForamt():
   import visualization
   import xyPlot
   import displayGroupOdbToolset as dgo
@@ -206,7 +206,7 @@ def SaveAllPlotAsXYXYForamt():
           res.append("")
       out.writerow(res)
 
-def SaveAllPlotAsTimeSerieseFormat():
+def E_SaveAllPlotAsTimeSerieseFormat():
   import visualization
   import xyPlot
   import displayGroupOdbToolset as dgo
@@ -243,7 +243,7 @@ def SaveAllPlotAsTimeSerieseFormat():
           res.append("")
       out.writerow(res)
 
-def CreateCouplingAtEndsOfBoltsRivets():
+def M_CreateCouplingAtEndsOfBoltsRivets():
   # -- 下請け関数群
   # for debug
   def p(msg):
@@ -369,7 +369,7 @@ def CreateCouplingAtEndsOfBoltsRivets():
 # 防音壁の計算での応力範囲ステップを作成し選択する．
 # 計算にはReturnステップが必要．
 
-def CreateRangeStepForNB():
+def D_CreateRangeStepForNB():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -403,7 +403,7 @@ def CreateRangeStepForNB():
         INVARIANT, 'Max. In-Plane Principal'), )
 
 
-def Back2White():
+def B_Back2White():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -411,18 +411,18 @@ def Back2White():
         backgroundColor='#FFFFFF')
 
 #
-def RemoveAllXY():
+def D_RemoveAllXY():
     import xyPlot
     for xy in session.xyDataObjects.keys():
       del session.xyDataObjects[xy]
 
 # alias
-def ClearAllXY():
+def D_ClearAllXY():
   RemoveAllXY()
 
 #
 # """ 集合FROMにある頂点から，集合TO内のもっとも近い頂点に接続するワイヤを作成する  """
-def ConnectWireToClosest():
+def M_ConnectWireToClosest():
     import section
     import regionToolset
     import displayGroupMdbToolset as dgm
@@ -561,7 +561,7 @@ def ConnectWireToClosest():
       raise
 
 
-def Back2Gradation():
+def B_Back2Gradation():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -569,7 +569,7 @@ def Back2Gradation():
         backgroundColor='#000054',
         backgroundBottomColor='#7A7A90')
 
-def Back2Original():
+def B_Back2Original():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -578,7 +578,7 @@ def Back2Original():
         backgroundBottomColor='#A3B1C6')
 
 
-def ColorSetting():
+def D_ColorSetting():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -592,7 +592,7 @@ def ColorSetting():
 
 
 # 節点の結果を出力するマクロ
-def NOT_YET_ExtractHistoryFromFieldByNset():
+def X_NOT_YET_ExtractHistoryFromFieldByNset():
   import visualization
   import xyPlot
   import displayGroupOdbToolset as dgo
@@ -632,7 +632,7 @@ def NOT_YET_ExtractHistoryFromFieldByNset():
     targets.append( session.xyDataObjects[key] )
   session.writeXYReport(fileName=rpt + '.rpt', appendMode=OFF, xyData=tuple(targets))
 
-def AssignProperty():
+def M_AssignProperty():
     import section
     import regionToolset
     import displayGroupMdbToolset as dgm
@@ -679,7 +679,7 @@ def AssignProperty():
       print e.message
       raise
 
-def DumpPropertyAssignment():
+def M_DumpPropertyAssignment():
     import section
     import regionToolset
     import displayGroupMdbToolset as dgm
@@ -712,7 +712,7 @@ def DumpPropertyAssignment():
           if not sec.suppressed:
             writer.writerow((model.name,part.name,sec.region[0],sec.sectionName, sec.offset, sec.offsetType))
 
-def CreateShellSection():
+def M_CreateShellSection():
     import section
     import regionToolset
     import displayGroupMdbToolset as dgm
@@ -783,7 +783,7 @@ def testGetVar():
 
 
 # 集合からXYデータの結果を取得するマクロ
-def ExtractXYFromField():
+def E_ExtractXYFromField():
   try:
     import visualization
     import xyPlot
@@ -840,7 +840,7 @@ def ExtractXYFromField():
 
 
 # 集合からXYデータの結果を取得するマクロ
-def ExtractXYFromFieldWithSum():
+def E_ExtractXYFromFieldWithSum():
   try:
     import visualization
     import xyPlot
@@ -902,14 +902,14 @@ def ExtractXYFromFieldWithSum():
     raise
 
 
-def A_ResultU3():
+def C_ResultU3():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
     session.viewports[session.currentViewportName].odbDisplay.setPrimaryVariable(
         variableLabel='U', outputPosition=NODAL, refinement=(COMPONENT, 'U3'))
 
-def ACC_LegendBack2White():
+def D_LegendBack2White():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -920,7 +920,7 @@ def ACC_LegendBack2White():
         minValue=-20000, showMinLocation=ON, showMaxLocation=ON)
 
 
-def AZZ_ModelVisualSetup():
+def A_Z_ModelVisualSetup():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -938,7 +938,7 @@ def AZZ_ModelVisualSetup():
     session.viewports[session.currentViewportName].odbDisplay.commonOptions.setValues(
         visibleEdges=FEATURE)
 
-def SetupRailConnectors():
+def M_SetupRailConnectors():
     import section
     import regionToolset
     import displayGroupMdbToolset as dgm
@@ -987,7 +987,7 @@ def SetupRailConnectors():
       a.ConnectorOrientation(region=csa.getSet(), localCsys1=a.datums[1])
 
 
-def Rail60kg():
+def M_Rail60kg():
     import section
     import regionToolset
     import displayGroupMdbToolset as dgm
