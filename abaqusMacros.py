@@ -171,11 +171,12 @@ def C_Precision4():
     mdb.models[0].sketches['__profile__'].sketchOptions.setValues(decimalPlaces=4)
 
 def A_RotateX90Neg():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    session.viewports[session.currentViewportName].view.rotate(xAngle=-90, yAngle=0, zAngle=0,
-        mode=MODEL)
+    import extract
+    extract.cvp().view.rotate(xAngle=-90, yAngle=0, zAngle=0, mode=MODEL)
+
+def A_RotateZ180():
+    import extract
+    extract.cvp().view.rotate(xAngle=0, yAngle=0, zAngle=180, mode=MODEL)
 
 
 def E_SaveAllPlotAsXYXYForamt():
