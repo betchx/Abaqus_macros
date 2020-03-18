@@ -1025,5 +1025,16 @@ def M_Rail60kg():
         consistentMassMatrix=False)
 
 
+def O_AbsRainbow():
+    session.Spectrum(name="AbsRaiwbow24", colors =('#FF0000', '#FF5C00', '#FFB900', 
+        '#E7FF00', '#8BFF00', '#2EFF00', '#00FF2E', '#00FF8B', '#00FFE7', 
+        '#00B9FF', '#005CFF', '#0000FF', '#0000FF', '#005CFF', '#00B9FF', 
+        '#00FFE7', '#00FF8B', '#00FF2E', '#2EFF00', '#8BFF00', '#E7FF00', 
+        '#FFB900', '#FF5C00', '#FF0000', ))
+    session.Spectrum(name="AbsRainbow12", colors =('#FF0000', '#FFB900', '#E7FF00', 
+        '#2EFF00', '#00FFE7', '#0000FF', '#0000FF', '#00FFE7', '#2EFF00', 
+        '#E7FF00', '#FFB900', '#FF0000', ))
+
+
 
 
