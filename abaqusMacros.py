@@ -1036,5 +1036,91 @@ def O_AbsRainbow():
         '#E7FF00', '#FFB900', '#FF0000', ))
 
 
+def loadArrow(arrowName, x, y, z, dx, dy, dz, caption=""):
+    import extract
+    odb = extract.currentOdb()
+    cvp = extract.cvp()
+    ud = odb.userData
+    if arrowName in ud.annotations.keys():
+      del ud.annotations[arrowName]
+    a = ud.Arrow(
+        name=arrowName,
+        startAnchor=(x + dx, y + dy, z + dz),
+        endAnchor=(x, y, z),
+        color='#FF0000',
+        lineThickness=MEDIUM) # VERY_THIN, THIN, MEDIUM, THICK
+    cvp.plotAnnotation(annotation=a)
+    if caption != "":
+      textName = arrowName+'_Cap'
+      if textName in ud.annotations.keys():
+        del ud.annotations[textName]
+      t = ud.Text(
+        name=textName,
+        text=caption,
+        offset=(0, 1),
+        anchor=(x + dx, y + dy, z + dz),
+        referencePoint=BOTTOM_CENTER,
+        justification=CENTER)
+      cvp.plotAnnotation(annotation=t)
+
+
+def O_PlotTrainLoad():
+  try:
+    import extract
+    odb = extract.currentOdb()
+    cvp = extract.cvp()
+    a = odb.rootAssembly
+    #
+    start = float(getInput("列車スタート位置", "0.0"))
+    speed = float(getInput("列車速度", "1.0"))
+    num_car = int(getInput("何両編成？", "2"))
+    #
+    ra = "RAILA"
+    if not ra in a.nodeSets.keys():
+      ra = getInput("右側レール集合の名前は？","Rail-2")
+      if not ra in a.nodeSets.keys():
+        print "右側レールの集合 %s が見つかりません" % (ra,)
+        return
+    rail_a = a.nodeSets[ra]
+    #
+    rb = "RAILB"
+    if not rb in a.nodeSets.keys():
+      rb = getInput("左側レール集合の名前は？","Rail-1")
+      if not rb in a.nodeSets.keys():
+        print "左側レールの集合 %s が見つかりません" % (rb,)
+        return
+    rail_b = a.nodeSets[rb]
+    #
+    a_y = rail_a.nodes[0][0].coordinates[1]
+    a_z = rail_a.nodes[0][0].coordinates[2]
+    b_y = rail_b.nodes[0][0].coordinates[1]
+    b_z = rail_b.nodes[0][0].coordinates[2]
+    a_xs  = [ n.coordinates[0] for n in rail_a.nodes[0] ]
+    b_xs  = [ n.coordinates[0] for n in rail_b.nodes[0] ]
+    x_min = min( a_xs + b_xs )
+    x_max = max( a_xs + b_xs )
+    #
+    od = cvp.odbDisplay
+    ff = od.fieldFrame
+    fs = od.fieldSteps[ff[0]]
+    tm = fs[8][ff[1]]  # time in step
+    #
+    # 過去の矢印を消す
+    for nm in odb.userData.annotations.keys():
+      if nm[0:3] == "TL-":
+        del odb.userData.annotations[nm]
+    #
+    origin = start + speed * tm
+    axs = (2.5, 5.0, 20.0, 22.5)
+    for car in range(num_car):
+      for ax in range(4):
+        x = origin - 25.0*car - axs[ax]
+        if  x <= x_max and x >= x_min:
+          loadArrow("TL-A-%d-%d" % (car+1, ax+1), x, a_y, a_z, 0.0, 0.0, 0.1, "P")
+          loadArrow("TL-B-%d-%d" % (car+1, ax+1), x, b_y, b_z, 0.0, 0.0, 0.1, "P")
+    #
+  except Exception as e:
+    print e.message
+    raise
 
 
