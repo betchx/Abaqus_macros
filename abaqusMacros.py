@@ -1125,3 +1125,40 @@ def O_PlotTrainLoad():
     raise
 
 
+
+def O_PlotLoadArrowToNset():
+  try:
+    import extract
+    odb = extract.currentOdb()
+    #cvp = extract.cvp()
+    a = odb.rootAssembly
+    #
+    setName = getInput("荷重矢印を記入する節点集合名")
+    label = getInput("荷重ラベル（必要により荷重値に修正）", "P")
+    alen = float(getInput("矢印の長さ","10"))
+    #
+    if not setName in a.nodeSets.keys():
+      print "節点集合 %s が見つかりません" % (setName,)
+      return
+    targets = a.nodeSets[setName]
+    #
+    a_x = targets.nodes[0][0].coordinates[0]
+    a_y = targets.nodes[0][0].coordinates[1]
+    a_z = targets.nodes[0][0].coordinates[2]
+    #
+    # 過去の矢印を消す
+    for nm in odb.userData.annotations.keys():
+      if nm[0:3] == "CL-":
+        del odb.userData.annotations[nm]
+    #
+    i = 0
+    for nd in targets.nodes[0]:
+      i = i + 1
+      c = nd.coordinates
+      plotLoadingArrow("CL-%d" % (i, ), c[0], c[1], c[2], 0.0, 0.0, 0.0, 0, alen, label)
+    #
+  except Exception as e:
+    print e.message
+    raise
+
+
