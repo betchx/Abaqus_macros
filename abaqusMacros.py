@@ -1036,7 +1036,7 @@ def O_AbsRainbow():
         '#E7FF00', '#FFB900', '#FF0000', ))
 
 
-def loadArrow(arrowName, x, y, z, dx, dy, dz, caption=""):
+def plotLoadingArrow(arrowName, x, y, z, dx, dy, dz, ox, oy, caption=""):
     import extract
     odb = extract.currentOdb()
     cvp = extract.cvp()
@@ -1045,10 +1045,11 @@ def loadArrow(arrowName, x, y, z, dx, dy, dz, caption=""):
       del ud.annotations[arrowName]
     a = ud.Arrow(
         name=arrowName,
-        startAnchor=(x + dx, y + dy, z + dz),
+        startAnchor=(x, y, z),
+        startPoint=(ox, oy),
         endAnchor=(x, y, z),
         color='#FF0000',
-        lineThickness=MEDIUM) # VERY_THIN, THIN, MEDIUM, THICK
+        lineThickness=THIN) # VERY_THIN, THIN, MEDIUM, THICK
     cvp.plotAnnotation(annotation=a)
     if caption != "":
       textName = arrowName+'_Cap'
@@ -1057,7 +1058,7 @@ def loadArrow(arrowName, x, y, z, dx, dy, dz, caption=""):
       t = ud.Text(
         name=textName,
         text=caption,
-        offset=(0, 1),
+        offset=(ox, oy),
         anchor=(x + dx, y + dy, z + dz),
         referencePoint=BOTTOM_CENTER,
         justification=CENTER)
@@ -1116,8 +1117,8 @@ def O_PlotTrainLoad():
       for ax in range(4):
         x = origin - 25.0*car - axs[ax]
         if  x <= x_max and x >= x_min:
-          loadArrow("TL-A-%d-%d" % (car+1, ax+1), x, a_y, a_z, 0.0, 0.0, 0.1, "P")
-          loadArrow("TL-B-%d-%d" % (car+1, ax+1), x, b_y, b_z, 0.0, 0.0, 0.1, "P")
+          plotLoadingArrow("TL-A-%d-%d" % (car+1, ax+1), x, a_y, a_z, 0.0, 0.0, 0.0, 0, 10, "P")
+          plotLoadingArrow("TL-B-%d-%d" % (car+1, ax+1), x, b_y, b_z, 0.0, 0.0, 0.0, 0, 10, "P")
     #
   except Exception as e:
     print e.message
