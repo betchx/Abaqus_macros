@@ -1162,3 +1162,71 @@ def O_PlotLoadArrowToNset():
     raise
 
 
+def O_LiveLoadStress():
+  import visualization
+  import xyPlot
+  import displayGroupOdbToolset as dgo
+  import extract
+  from textRepr import prettyPrint as pp
+  
+  def getRes(frame):
+    fo = frame.fieldOutputs
+    return (fo['S'], fo['U'])
+  
+  #: ---- Creating Field Output From Frames ----
+  odb = extract.currentOdb()
+  out = session.ScratchOdb(odb=odb)
+  target_frames = odb.steps.values()[-1].frames
+  base_frame = target_frames[0]
+  (s0, u0) = getRes(base_frame)
+  print 'res'
+  sessionStep = out.Step(name='LiveLoad', description='Reaction by Live Load', domain=TIME, timePeriod=1.0)
+  for i in range(len(target_frames)):
+    print 'Frame:%03d' % i
+    (s1, u1) = getRes(target_frames[i])
+    s  = 0.001*(s1-s0)   # kPa to MPa
+    u  = (u1 - u0)*1000  # m to mm
+    sessionLC = sessionStep.LoadCase(name='LL%03d' % i)
+    sessionFrame = sessionStep.Frame(loadCase=sessionLC, description='Load Case: LL%03d; Restults by Live Load' % i)
+    sessionField = sessionFrame.FieldOutput(name='S',    description='Stress components', field=s)
+    sessionField = sessionFrame.FieldOutput(name='U',    description='Spatial displacement', field=u)
+
+def O_LiveLoadResults():
+  import visualization
+  import xyPlot
+  import displayGroupOdbToolset as dgo
+  import extract
+  from textRepr import prettyPrint as pp
+  
+  def getRes(frame):
+    fo = frame.fieldOutputs
+    return (fo['RF'], fo['RM'], fo['S'], fo['SF'], fo['SM'], fo['U'], fo['UR'])
+  
+  #: ---- Creating Field Output From Frames ----
+  odb = extract.currentOdb()
+  out = session.ScratchOdb(odb=odb)
+  target_frames = odb.steps.values()[-1].frames
+  base_frame = target_frames[0]
+  (rf0, rm0, s0, sf0, sm0, u0, ur0) = getRes(base_frame)
+  print 'res'
+  sessionStep = out.Step(name='LiveLoad', description='Reaction by Live Load', domain=TIME, timePeriod=1.0)
+  for i in range(len(target_frames)):
+    print 'Frame:%03d' % i
+    (rf1, rm1, s1, sf1, sm1, u1, ur1) = getRes(target_frames[i])
+    rf = rf1 - rf0
+    rm = rm1 - rm0
+    s  = 0.001*(s1-s0)   # kPa to MPa
+    sf = sf1 - sf0
+    sm = sm1 - sm0
+    u  = (u1 - u0)*1000  # m to mm
+    ur = ur1 - ur0
+    sessionLC = sessionStep.LoadCase(name='LL%03d' % i)
+    sessionFrame = sessionStep.Frame(loadCase=sessionLC, description='Load Case: LL%03d; Restults by Live Load' % i)
+    sessionField = sessionFrame.FieldOutput(name='RF',   description='Reaction force', field=rf)
+    sessionField = sessionFrame.FieldOutput(name='RM',   description='Reaction moment', field=rm)
+    sessionField = sessionFrame.FieldOutput(name='S',    description='Stress components', field=s)
+    sessionField = sessionFrame.FieldOutput(name='SF',   description='Section Forces', field=sf)
+    sessionField = sessionFrame.FieldOutput(name='SM',   description='Section Moments', field=sm)
+    sessionField = sessionFrame.FieldOutput(name='U',    description='Spatial displacement', field=u)
+    sessionField = sessionFrame.FieldOutput(name='UR',   description='Rotational displacement', field=ur)
+
