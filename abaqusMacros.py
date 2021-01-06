@@ -1239,3 +1239,38 @@ def Z_TMP20201207_View4():
         26.875), cameraUpVector=(-0.4029, 0.4029, 0.82179), cameraTarget=(
         -14.612, -1.6631, 3.7516), viewOffsetX=0, viewOffsetY=0, autoFit=OFF)
 
+
+def F_SelectModes():
+  try:
+    import extract
+    odb = extract.currentOdb()
+    #odbName=session.viewports[session.currentViewportName].odbDisplay.name
+    #session.odbData[odbName].setValues(activeFrames=(('Freq', ('1:15:7', )), ))
+    modes = getInput("Input Mode numbers with space separated")
+    if modes == '':
+      return
+    nm = odb.steps.values()[0].name
+    print nm
+    print modes
+    lst = [ x for x in modes.split(' ') ]
+    print lst
+    tpl = tuple(lst)
+    print tpl
+    odbName=session.viewports[session.currentViewportName].odbDisplay.name
+    session.odbData[odbName].setValues(activeFrames=((nm, tpl), ))
+    #
+  except Exception as e:
+    print e.message
+    raise
+
+
+
+
+def __template():
+    try:
+      pass
+    except Exception as e:
+      print e.message
+      raise
+
+
