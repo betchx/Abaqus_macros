@@ -1230,3 +1230,12 @@ def O_LiveLoadResults():
     sessionField = sessionFrame.FieldOutput(name='U',    description='Spatial displacement', field=u)
     sessionField = sessionFrame.FieldOutput(name='UR',   description='Rotational displacement', field=ur)
 
+def Z_TMP20201207_View4():
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    session.View(name='User-4', nearPlane=68.038, farPlane=103.15, width=8.9694, 
+        height=5.3688, projection=PARALLEL, cameraPosition=(45.302, -61.577, 
+        26.875), cameraUpVector=(-0.4029, 0.4029, 0.82179), cameraTarget=(
+        -14.612, -1.6631, 3.7516), viewOffsetX=0, viewOffsetY=0, autoFit=OFF)
+
