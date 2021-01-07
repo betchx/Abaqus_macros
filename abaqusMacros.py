@@ -924,9 +924,6 @@ def D_LegendBack2White():
     import displayGroupOdbToolset as dgo
     session.viewports[session.currentViewportName].viewportAnnotationOptions.setValues(
         legendBackgroundStyle=MATCH, compass=OFF)
-    session.viewports[session.currentViewportName].odbDisplay.contourOptions.setValues(
-        maxAutoCompute=OFF, maxValue=100000, minAutoCompute=OFF, 
-        minValue=-20000, showMinLocation=ON, showMaxLocation=ON)
 
 
 def A_Z_ModelVisualSetup():
