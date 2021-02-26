@@ -341,10 +341,9 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
   # -- 対称となる点とエッジの選択 --
   # リベットのセットを取得
   rivets = root.sets[set_name]  # => Set
-  # リベット端部の点のIDリストを取得. 二重に作成しないようにsetにして重複を取り除く
+  # リベット端部の点を取得．複数のエッジで共有されている場合は対象外とする．
   targets = {}
   for e in rivets.edges:
-    #edge_len = e.getSize()
     inst = e.instanceName
     for i in e.getVertices():
      if inst is None:
@@ -353,11 +352,10 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
      else:
        v = root.instances[inst].vertices[i]
        key = inst + "." + str(i)
-     location = v.pointOn
      if key in targets:
        targets[key] = None  # すでに存在すれば，中身を空に
      else:
-       targets[key] = (v, e, location, inst)
+       targets[key] = v #(v, e, v.pointOn, inst)
   for k in targets.keys():
     if targets[k] is None:
       del targets[k]
@@ -366,33 +364,41 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
   # -- Coupling 作成 --
   #
   for key in targets:
-    v, e, loc, inst = targets[key]
+    v = targets[key]
+    # 親の取得
+    inst = v.instanceName
+    parent = root if inst is None else root.instances[inst]
+    # 接続するエッジを取得
+    eid = v.getEdges()[0]
+    e = parent.edges[eid]
     # 検索する円柱範囲を計算
-    c, b, t = getCylinder(v, e)
-    # cylinderから対象となる面とエッジの集合に変換
+    #c, b, t = getCylinder(v, e)
+    center = v.pointOn[0]
+    inside = e.pointOn[0]
+    height = [ (a[0] - a[1])*0.1 for a in zip(inside, center) ]
+    ch = zip(center, height)
+    bottom = [ a[0] - a[1]/2.0 for a in ch]
+    top = [a[0] + a[1] / 2.0 for a in ch]
+    # cylinderから対象となる面とエッジの集合に変換  # 検索先はインスタンス限定．
+    ss = None
+    to_name = prefix + "-Hole-" + key.replace(".","_")
     for ins_name in ins_names:
       instance = root.instances[ins_name]
-      ed = instance.edges.getByBoundingCylinder(b, t, radius)
-      if len(ed) > 0:
-        target_edges = ed
-      fs = instance.faces.getByBoundingCylinder(b, t, radius)
+      # サーフェースが優先
+      fs = instance.faces.getByBoundingCylinder(bottom, top, radius)
       if len(fs) > 0:
-        target_faces = fs
-    if len(target_edges) + len(target_faces) > 0:
-      #print key + ": found(" + str(len(target_edges)) + "," + str(len(target_faces)) + ")"
-      # 接続先の集合
-      to_name = prefix + "-Hole-" + key.replace(".","_")
-      if len(target_faces) > 0:
-        ss = root.Set(name=to_name, faces=target_faces )
-      else:
-        ss = root.Set(name=to_name, edges=target_edges )
-      # 接続元の点の集合
+        ss = root.Set(name=to_name, faces=fs)
+        break
+      ed = instance.edges.getByBoundingCylinder(bottom, top, radius)
+      if len(ed) > 0:
+        ss = root.Set(name=to_name, edges=ed)
+        break
+    # 見つかればカップリングを作成する．
+    if ss is not None:
+      # 接続元の  点の集合
       from_name = prefix + "-End-" + key.replace(".","_")
       # findAtでVerticesArrayにしないと集合が作成できない
-      if inst is None:
-        vs = root.vertices.findAt(loc)
-      else:
-        vs = root.instances[inst].vertices.findAt(loc)
+      vs = parent.vertices.findAt(v.pointOn)
       ps = root.Set(name=from_name, vertices=vs)
       # カップリングを作成
       cp_name = prefix + "-" + key.replace(".","_")
