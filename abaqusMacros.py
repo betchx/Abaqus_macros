@@ -253,6 +253,7 @@ def E_SaveAllPlotAsTimeSerieseFormat():
       out.writerow(res)
 
 def M_CreateCouplingAtEndsOfBoltsRivets():
+ try:
   # -- 下請け関数群
   # for debug
   def p(msg):
@@ -266,23 +267,21 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
   #    ユーザーから番号の入力を得て，それに対応する値を返す．
   #  """
   def QueryList(target, header):
-    keys = target.keys()
-    #p("keys")
-    num = len(keys)
+    num = len(target)
     #p("num:"+str(num))
     if num == 0:
       return None
     if num == 1:
-      return keys[0]
+      return target[0]
     #p("msgs:")
-    msgs = [ str(i)+":"+k for i, k in enumerate(keys)]
+    msgs = [ str(i)+":"+k for i, k in enumerate(target)]
     res = getInput(header + ("\n" if header else "")+"Enter number\n" +"\n".join(msgs),"")
     if res == "":
       #p("first:"+keys[0])
-      return keys[0]
+      return target[0]
     else:
       #p(res+":"+keys[int(res)])
-      return keys[int(res)]
+      return target[int(res)]
   # ---------------------------
   #  """ボルトやリベットを表す集合かどうかの判定を行う．
   #   return true if the Set has edges without any face or cell.
@@ -292,7 +291,7 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
     f = len(target.faces)
     c = len(target.cells)
     res = e > 0 and (f+c)<1
-    p(str(e)+" edges\n"+str(f)+" faces\n"+str(c)+" cells\nresult:"+str(res))
+    #p(str(e)+" edges\n"+str(f)+" faces\n"+str(c)+" cells\nresult:"+str(res))
     return res
   # ---------------------------
   #  """リベットエンドから孔径+誤差範囲内にあるフェイスを検索"""
@@ -307,7 +306,7 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
   # ---------------------------
   # -- 設定 --
   # ---------------------------
-  model_name = QueryList(mdb.models, "Which Model?")
+  model_name = QueryList(mdb.models.keys(), "Which Model?")
   #p(model_name)
   # モデル
   model = mdb.models[model_name]
@@ -316,31 +315,25 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
   if len(root.instances) == 0:
     getWarningReply("No Instance was found. Exit",(YES,))
     return None
-  # インスタンスの確認
-  #base = root.instances[instance_name]
-  #p("GetSet("+str(len(root.allSets))+")")
-  #k = root.allSets.keys()[16]
-  #p(k)
-  #res = isLineSet(root.allSets[k])
-  #p(str(res))
   # セットの取得
   keys = root.allSets.keys()
+  wire_set_keys = []
   for k in keys:
-    p(k)
-  vals = [root.allSets[k] for k in keys]
-  p("vals")
-  isLine = [isLineSet(x) for x in vals]
-  p("isLine")
-  wire_sets = [x for x,y in zip(vals, isLine) if y]
-  #wire_sets = [root.allSets[k] for k in root.allSets.keys() if isLineSet(root.allSets[k]) ]
-  p("number of candidates is "+str(len(wire_sets)))
-  set_name = QueryList(wire_sets,"Select target set of bolt/rivet")
+    st = root.allSets[k]
+    if isLineSet(st):
+      wire_set_keys.append(k)
+  #p("number of candidates is "+str(len(wire_set_keys)))
+  set_name = QueryList(wire_set_keys, "Select target set of bolt/rivet")
   res = getInput("Diameter", "")
   if res == "":
     return None
   diameter = float(res)
+  # 孔径を取得
+  radius = diameter * 0.51 # 誤差対策で若干大き目に
+  #
+  # 結果出力のPrefix
   prefix = getInput("Enter prefix", "Bolt")
-  p("Setting Finished")
+  #p("Setting Finished")
   #
   # -- 基本的な準備 --
   #
@@ -349,31 +342,72 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
   # リベットのセットを取得
   rivets = root.sets[set_name]  # => Set
   # リベット端部の点のIDリストを取得. 二重に作成しないようにsetにして重複を取り除く
-  #rivet_ends_ids = [x for e in rivets.edges for x in e.getVertices()] # flatted  [ int ]
-  rivet_ends_ids = set([x for e in rivets.edges for x in e.getVertices()]) # set( int )
-  # リベット端部頂点のリストを作成
-  rivet_end_vertices = [base.vertices[i] for i in rivet_ends_ids] # => [ Vertix ]
-  # リベット端部の点の座標リストを取得
-  rivet_ends = [v.pointOn[0] for v in rivet_end_vertices] # => [ (float,float, float) ]
-  # 孔径を取得
-  radius = diameter * 0.51 # 誤差対策で若干大き目に
+  targets = {}
+  for e in rivets.edges:
+    #edge_len = e.getSize()
+    inst = e.instanceName
+    for i in e.getVertices():
+     if inst is None:
+       v = root.vertices[i]
+       key = str(i)
+     else:
+       v = root.instances[inst].vertices[i]
+       key = inst + "." + str(i)
+     location = v.pointOn
+     if key in targets:
+       targets[key] = None  # すでに存在すれば，中身を空に
+     else:
+       targets[key] = (v, e, location, inst)
+  for k in targets.keys():
+    if targets[k] is None:
+      del targets[k]
   #
+  ins_names = root.instances.keys()
   # -- Coupling 作成 --
   #
-  # vertex cylinder pair
-  cylinder = [getCylinder(v, base.edges[v.getEdges()[0] ]) for v in rivet_end_vertices]
-  # cylinderから対象となる面とエッジの集合に変換
-  vef = [ (v, root.edges.getByBoundingCylinder(b,t,radius), root.faces.getByBoundingCylinder(b,t,radius)) for v, b, t in cylinder]
-  # 名前と面(エッジ）と点のリストを作成． setから名前が取得できないので，名前はここで作成する．
-  # cylinder内に対象が見つからなかった場合は除外する．
-  nsp = [ [prefix+str(v.index), root.Set(name=prefix+'-Hole'+str(v.index), edges=es, faces=fs), root.Set(name=prefix+'-End'+str(v.index), vertices=root.vertices.findAt(v.pointOn)) ] for v, es, fs in vef if len(es)+len(fs)>0 ]
-  # カップリングを作成
-  cps = [ model.Coupling(name=n, controlPoint=p, surface=s, influenceRadius=WHOLE_SURFACE, couplingType=KINEMATIC, localCsys=None, u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON ) for n, s, p in nsp]
+  for key in targets:
+    v, e, loc, inst = targets[key]
+    # 検索する円柱範囲を計算
+    c, b, t = getCylinder(v, e)
+    # cylinderから対象となる面とエッジの集合に変換
+    for ins_name in ins_names:
+      instance = root.instances[ins_name]
+      ed = instance.edges.getByBoundingCylinder(b, t, radius)
+      if len(ed) > 0:
+        target_edges = ed
+      fs = instance.faces.getByBoundingCylinder(b, t, radius)
+      if len(fs) > 0:
+        target_faces = fs
+    if len(target_edges) + len(target_faces) > 0:
+      #print key + ": found(" + str(len(target_edges)) + "," + str(len(target_faces)) + ")"
+      # 接続先の集合
+      to_name = prefix + "-Hole-" + key.replace(".","_")
+      if len(target_faces) > 0:
+        ss = root.Set(name=to_name, faces=target_faces )
+      else:
+        ss = root.Set(name=to_name, edges=target_edges )
+      # 接続元の点の集合
+      from_name = prefix + "-End-" + key.replace(".","_")
+      # findAtでVerticesArrayにしないと集合が作成できない
+      if inst is None:
+        vs = root.vertices.findAt(loc)
+      else:
+        vs = root.instances[inst].vertices.findAt(loc)
+      ps = root.Set(name=from_name, vertices=vs)
+      # カップリングを作成
+      cp_name = prefix + "-" + key.replace(".","_")
+      model.Coupling(name=cp_name, controlPoint=ps, surface=ss,
+        influenceRadius=WHOLE_SURFACE, couplingType=KINEMATIC, localCsys=None,
+        u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON )
+    #else:
+    #  print key + ": not found"
+  print "Done"
+ except Exception as e:
+   info  = sys.exc_info()
+   c, ax, t = info
+   print "Error:",ax.message
 
 
-#
-# 名前と面(エッジ）と点のリストを作成． setから名前が取得できないので，名前はここで作成する．
-# OLD:  nsp = [ [prefix+str(v.index), root.Set(name=prefix+'-Hole'+str(v.index), edges=root.edges.getByBoundingCylinder(b,t,radius), faces=root.faces.getByBoundingCylinder(b,t,radius)), root.Set(name=prefix+'-End'+str(v.index), vertices=root.vertices.findAt(v.pointOn)) ] for v, b, t in cylinder]
 
 # 防音壁の計算での応力範囲ステップを作成し選択する．
 # 計算にはReturnステップが必要．
