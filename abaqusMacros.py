@@ -258,7 +258,7 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
   # for debug
   def p(msg):
     usage="\n(Abort?)"
-    res =  getWarningReply(msg+usage,(YES,NO))
+    res =  getWarningReply(str(msg)+usage,(YES,NO))
     if res == YES:
       raise RuntimeError("Stop by User")
   # ---------------------------
@@ -365,6 +365,7 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
   #
   for key in targets:
     v = targets[key]
+    xkey = key.replace(".","_")
     # 親の取得
     inst = v.instanceName
     parent = root if inst is None else root.instances[inst]
@@ -381,7 +382,7 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
     top = [a[0] + a[1] / 2.0 for a in ch]
     # cylinderから対象となる面とエッジの集合に変換  # 検索先はインスタンス限定．
     ss = None
-    to_name = prefix + "-Hole-" + key.replace(".","_")
+    to_name = prefix + "-Hole-" + xkey
     for ins_name in ins_names:
       instance = root.instances[ins_name]
       # サーフェースが優先
@@ -389,19 +390,20 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
       if len(fs) > 0:
         ss = root.Set(name=to_name, faces=fs)
         break
-      ed = instance.edges.getByBoundingCylinder(bottom, top, radius)
-      if len(ed) > 0:
-        ss = root.Set(name=to_name, edges=ed)
-        break
+      # なぜかエラーになるものがあるので，一旦無視
+      #ed = instance.edges.getByBoundingCylinder(bottom, top, radius)
+      #if len(ed) > 0:
+      #  ss = root.Set(name=to_name, edges=ed)
+      #  break
     # 見つかればカップリングを作成する．
-    if ss is not None:
+    if not ss is None:
       # 接続元の  点の集合
-      from_name = prefix + "-End-" + key.replace(".","_")
+      from_name = prefix + "-End-" + xkey
       # findAtでVerticesArrayにしないと集合が作成できない
       vs = parent.vertices.findAt(v.pointOn)
       ps = root.Set(name=from_name, vertices=vs)
       # カップリングを作成
-      cp_name = prefix + "-" + key.replace(".","_")
+      cp_name = prefix + "-" + xkey
       model.Coupling(name=cp_name, controlPoint=ps, surface=ss,
         influenceRadius=WHOLE_SURFACE, couplingType=KINEMATIC, localCsys=None,
         u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON )
