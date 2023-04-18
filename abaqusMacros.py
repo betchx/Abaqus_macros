@@ -17,7 +17,7 @@ def BA_RotateX90Neg():
       import extract
       extract.cvp().view.rotate(xAngle=-90, yAngle=0, zAngle=0, mode=MODEL)
     except Exception as e:
-      print e.message
+      print(e)
       raise
 
 def BA_RotateZ180():
@@ -195,16 +195,16 @@ def E_ExtractXYFromField():
     import extract
     #
     def SetNotFound(set_name):
-      print "Warnig: set " + set_name + " is not exist. Skipped"
+      print("Warning: set " + set_name + " is not exist. Skipped")
     odbkey = extract.SelectOdbKey()
-    print odbkey
+    print(odbkey)
     odb = session.odbs[odbkey]
     basename = os.path.basename(odbkey)
     stem = os.path.splitext(basename)[0]
     keys = []
     items = extract.GetSetsAndKey()
     for item in items:
-      print item
+      print(item)
       if ',' in item:
         arr = item.split(',')
         set_name = arr[0].strip()
@@ -223,21 +223,21 @@ def E_ExtractXYFromField():
           SetNotFound(set_name)
           tags = [] # empty list ==> to skip XYFromField call.
       for tag in tags:
-        print set_name + ':' + tag
+        print(set_name + ':' + tag)
         extract.XYFromField(odb, set_name, tag)
         res = tempXY.AddPrefix(set_name)
         for k in res:
           keys.append(k)
     rpt = getInput("Enter basename of rpt filename",stem)
     if rpt == None:
-      print "rpt出力はキャンセルされました"
+      print("rpt出力はキャンセルされました")
       return
     targets = []
     for key in keys:
       targets.append( session.xyDataObjects[key] )
     session.writeXYReport(fileName=rpt + '.rpt', appendMode=OFF, xyData=tuple(targets))
   except Exception as e:
-    print e.message
+    print(e.message)
     raise
 
 
@@ -252,16 +252,16 @@ def E_ExtractXYFromFieldWithSum():
     import extract
     #
     def SetNotFound(set_name):
-      print "Warnig: set " + set_name + " is not exist. Skipped"
+      print("Warnig: set " + set_name + " is not exist. Skipped")
     odbkey = extract.SelectOdbKey()
-    print odbkey
+    print(odbkey)
     odb = session.odbs[odbkey]
     basename = os.path.basename(odbkey)
     stem = os.path.splitext(basename)[0]
     keys = []
     items = extract.GetSetsAndKey()
     for item in items:
-      print item
+      print(item)
       if ',' in item:
         arr = item.split(',')
         set_name = arr[0].strip()
@@ -280,7 +280,7 @@ def E_ExtractXYFromFieldWithSum():
           SetNotFound(set_name)
           tags = [] # empty list ==> to skip XYFromField call.
       for tag in tags:
-        print set_name + ':' + tag
+        print(set_name + ':' + tag)
         extract.XYFromField(odb, set_name, tag)
         #res = tempXY.AddPrefix(set_name)
         targets = []
@@ -293,14 +293,14 @@ def E_ExtractXYFromFieldWithSum():
         keys.append(set_name)
     rpt = getInput("Enter basename of rpt filename",stem)
     if rpt == None:
-      print "rpt出力はキャンセルされました"
+      print("rpt出力はキャンセルされました")
       return
     targets = []
     for key in keys:
       targets.append( session.xyDataObjects[key] )
     session.writeXYReport(fileName=rpt + '.rpt', appendMode=OFF, xyData=tuple(targets))
   except Exception as e:
-    print e.message
+    print(e.message)
     raise
 
 def E_ExtractStressHistoryFromFieldByElset():
@@ -312,7 +312,7 @@ def E_ExtractStressHistoryFromFieldByElset():
   import extract
   import tempXY
   odbkey = extract.SelectOdbKey()
-  print odbkey
+  print(odb_key)
   odb = session.odbs[odbkey]
   basename = os.path.basename(odbkey)
   stem = os.path.splitext(basename)[0]
@@ -444,7 +444,7 @@ def F_SelectModes():
     session.odbData[odbName].setValues(activeFrames=((nm, tpl), ))
     #
   except Exception as e:
-    print e.message
+    print(e.message)
     raise
 
 #
@@ -476,7 +476,7 @@ def M_ConnectWireToClosest():
       #########
       # Assemblyの取得
       n = len(mdb.models.keys())
-      print "Number of models is %d" % (n,)
+      print("Number of models is %d" % (n,))
       if n == 1:
         a = mdb.models.values()[0].rootAssembly
       else:
@@ -487,13 +487,13 @@ def M_ConnectWireToClosest():
         if i < 0: i = 0
         if i >= num: i = num - 1
         a = mdb.models[keys[i]].rootAssembly
-      print "Target model is %s" % (a.modelName, )
+      print("Target model is %s" % (a.modelName, ))
       ####
       # 必要なセットがあるかどうかのチェック
       #####
       # エッジ数の保存   (作成された集合の判定用）
       original_edge_count = len(a.edges)
-      print "Original number of edges is %d" % original_edge_count
+      print("Original number of edges is %d" % original_edge_count)
       #####
       # 対象頂点集合の取得
       def getSet(asm, key):
@@ -513,10 +513,10 @@ def M_ConnectWireToClosest():
         from_key = getInput("起点となる集合名を指定してください")
       from_set = getSet(a, from_key)
       if from_set is None:
-        print "エラー：アセンブリにワイヤ探索起点の集合「%s」が見つかりません．" % (from_key,)
+        print("エラー：アセンブリにワイヤ探索起点の集合「%s」が見つかりません．" % (from_key,))
         return
       origin = from_set.vertices
-      print "Number of vertices in the %s set is %d" % (from_key, len(origin))
+      print("Number of vertices in the %s set is %d" % (from_key, len(origin)))
       #
       if a.sets.has_key("TO"):
         to_key = "TO"
@@ -524,60 +524,60 @@ def M_ConnectWireToClosest():
         to_key = getInput("終点の候補となる集合名を指定してください")
       to_set = getSet(a, to_key)
       if to_set is None:
-        print "エラー：アセンブリにワイヤ接続先候補頂点を含む集合「%s」が見つかりません．" % (to_key,)
+        print("エラー：アセンブリにワイヤ接続先候補頂点を含む集合「%s」が見つかりません．" % (to_key,))
         return
       dest = to_set.vertices
-      print "Number of vertices in the %s set is %d" % (to_key, len(dest) )
+      print("Number of vertices in the %s set is %d" % (to_key, len(dest) ))
       if a.sets.has_key("CONNECT_FROM_TO"):
-        print "エラー： 作成したワイヤを保存する集合「CONNECT_FROM_TO」がすでに存在します．削除するか名前を変更して下さい．"
+        print("エラー： 作成したワイヤを保存する集合「CONNECT_FROM_TO」がすでに存在します．削除するか名前を変更して下さい．")
         return
       ####
       # 近接頂点の検索
       points = [v.pointOn[0] for v in origin]
-      print "points were created such as (%g, %g, %g)" % points[0]
+      print("points were created such as (%g, %g, %g)" % points[0])
       coords = tuple(points)
       closest = dest.getClosest( coordinates=tuple(points), searchTolerance=1.0)
-      print "closest was created"
+      print("closest was created")
       ####
       # ペアのタプルの作成
       pair = tuple( zip([ v for v in origin], [ closest[k][0] for k in closest.keys()] ))
-      print "Vertices pair list was created."
+      print("Vertices pair list was created.")
       ####
       # ラインの作成
-      print "Creating Wires."
+      print("Creating Wires.")
       a.WirePolyLine(points=pair, mergeType=IMPRINT, meshable=OFF)
-      print "Done."
+      print("Done.")
       ####
       # 集合作成のためのエッジ集合数の再取得
       after_edge_count = len(a.edges)
-      print "Number of edges after were creation is %d" % after_edge_count
+      print("Number of edges after were creation is %d" % after_edge_count)
       ####
       # エッジの差分を取得
       new_edge_count = after_edge_count - original_edge_count
-      print "Number of created edges in new Wire is %d" % new_edge_count
+      print("Number of created edges in new Wire is %d" % new_edge_count)
       ####
       # エッジの集合を作成
       #    新たに作成されたフィーチャーのエッジは若い番号側に保存されるので，
       #  作成された数がわかれば対象を選定できる．
       a.Set(name="CONNECT_FROM_TO", edges=a.edges[0:(new_edge_count)])
-      print "Created edges were saved in the new set of CONNECT_FROM_TO."
+      print("Created edges were saved in the new set of CONNECT_FROM_TO.")
     except Exception as e:
       info  = sys.exc_info()
       c, ax, t = info
-      #print type(c)
-      #print type(ax)
-      #print type(t)
-      #print "exception class %s" % c
+      #print(type(c))
+      #print(type(ax))
+      #print(type(t))
+      #print("exception class %s" % c)
       #for x in dir(ax.message):
-      #  print x
-      #print type(ax.message)
-      #print "Message:"
-      print "Error:",ax.message
-      #print unicode(ax.message, 'shift_jis')
-      #print "Args:"
+      #  print(x)
+      #print(type(ax.message))
+      #print("Message:")
+      print("Error:",ax.message)
+      #print(unicode(ax.message, 'shift_jis'))
+      #print("Args:")
       #for x in ax.args:
-      #  print x
-      #print "exit"
+      #  print(x)
+      #print("exit")
       with open("MacroError.txt","wb") as f:
         f.write("Message:\n")
         f.write(ax.message)
@@ -613,15 +613,15 @@ def M_AssignProperty():
       if not os.path.isfile(fname):
         fname = fname + '.csv'
         if not os.path.isfile(fname):
-          print "File is not found"
+          print("File is not found")
           return
-      print 'Open file:' + fname
+      print('Open file:' + fname)
       with open(fname, "rb") as f:
         reader = csv.reader(f)
         for row in reader:
           model, part, set, sec, offset = row[0:5]
           if not model[0] == '#':
-            print row
+            print(row)
             p = mdb.models[model].parts[part]
             r = p.sets[set]
             p.SectionAssignment(region=r,
@@ -631,7 +631,7 @@ def M_AssignProperty():
               offsetField='',
               thicknessAssignment=FROM_SECTION)
     except Exception as e:
-      print e.message
+      print(e.message)
       raise
 
 def M_DumpPartSets():
@@ -696,9 +696,9 @@ def M_DumpPropertyAssignment():
       writer = csv.writer(f)
       writer.writerow(["#model","Part","Set","Section","Offset"])
       for part in model.parts.values():
-        print part.name
+        print(part.name)
         for sec in part.sectionAssignments:
-          print '   ' + sec.sectionName
+          print('   ' + sec.sectionName)
           if not sec.suppressed:
             writer.writerow((model.name,part.name,sec.region[0],sec.sectionName, sec.offset, sec.offsetType))
 
@@ -728,15 +728,15 @@ def M_CreateShellSection():
       if not os.path.isfile(fname):
         fname = fname + '.csv'
         if not os.path.isfile(fname):
-          print "File is not found"
+          print("File is not found")
           return
-      print 'read:'+ fname
+      print('read:'+ fname)
       with open(fname, 'rb') as f:
-        print 'opened'
+        print('opened')
         reader = csv.reader(f)
-        print 'reader created'
+        print('reader created')
         for row in reader:
-          print row
+          print(row)
           model, name, mat, thickness = row
           if not model[0] == '#':
             t=float(thickness)*0.001
@@ -746,7 +746,7 @@ def M_CreateShellSection():
               poissonDefinition=DEFAULT, thicknessModulus=None, temperature=GRADIENT, 
               useDensity=OFF, integrationRule=SIMPSON, numIntPts=5)
     except Exception as e:
-      print e.message
+      print(e.message)
       raise
 
 def M_CreateCouplingAtEndsOfBoltsRivets():
@@ -905,12 +905,12 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
         influenceRadius=WHOLE_SURFACE, couplingType=KINEMATIC, localCsys=None,
         u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON )
     #else:
-    #  print key + ": not found"
-  print "Done"
+    #  print(key + ": not found")
+  print("Done")
  except Exception as e:
    info  = sys.exc_info()
    c, ax, t = info
-   print "Error:",ax.message
+   print("Error:",ax.message)
 
 def M_SetupRailConnectors():
     import section
@@ -1013,7 +1013,7 @@ def O_PlotTrainLoad():
     if not ra in a.nodeSets.keys():
       ra = getInput("右側レール集合の名前は？","Rail-2")
       if not ra in a.nodeSets.keys():
-        print "右側レールの集合 %s が見つかりません" % (ra,)
+        print("右側レールの集合 %s が見つかりません" % (ra,))
         return
     rail_a = a.nodeSets[ra]
     #
@@ -1021,7 +1021,7 @@ def O_PlotTrainLoad():
     if not rb in a.nodeSets.keys():
       rb = getInput("左側レール集合の名前は？","Rail-1")
       if not rb in a.nodeSets.keys():
-        print "左側レールの集合 %s が見つかりません" % (rb,)
+        print("左側レールの集合 %s が見つかりません" % (rb,))
         return
     rail_b = a.nodeSets[rb]
     #
@@ -1054,7 +1054,7 @@ def O_PlotTrainLoad():
           plotLoadingArrow("TL-B-%d-%d" % (car+1, ax+1), x, b_y, b_z, 0.0, 0.0, 0.0, 0, 10, "P")
     #
   except Exception as e:
-    print e.message
+    print(e)
     raise
 
 def O_PlotLoadArrowToNset():
@@ -1069,7 +1069,7 @@ def O_PlotLoadArrowToNset():
     alen = float(getInput("矢印の長さ","10"))
     #
     if not setName in a.nodeSets.keys():
-      print "節点集合 %s が見つかりません" % (setName,)
+      print("節点集合 %s が見つかりません" % (setName,))
       return
     targets = a.nodeSets[setName]
     #
@@ -1089,7 +1089,7 @@ def O_PlotLoadArrowToNset():
       plotLoadingArrow("CL-%d" % (i, ), c[0], c[1], c[2], 0.0, 0.0, 0.0, 0, alen, label)
     #
   except Exception as e:
-    print e.message
+    print(e)
     raise
 
 def O_LiveLoadStress():
@@ -1109,10 +1109,10 @@ def O_LiveLoadStress():
   target_frames = odb.steps.values()[-1].frames
   base_frame = target_frames[0]
   (s0, u0) = getRes(base_frame)
-  print 'res'
+  print('res')
   sessionStep = out.Step(name='LiveLoad', description='Reaction by Live Load', domain=TIME, timePeriod=1.0)
   for i in range(len(target_frames)):
-    print 'Frame:%03d' % i
+    print('Frame:%03d' % i)
     (s1, u1) = getRes(target_frames[i])
     s  = 0.001*(s1-s0)   # kPa to MPa
     u  = (u1 - u0)*1000  # m to mm
@@ -1138,10 +1138,10 @@ def O_LiveLoadResults():
   target_frames = odb.steps.values()[-1].frames
   base_frame = target_frames[0]
   (rf0, rm0, s0, sf0, sm0, u0, ur0) = getRes(base_frame)
-  print 'res'
+  print('res')
   sessionStep = out.Step(name='LiveLoad', description='Reaction by Live Load', domain=TIME, timePeriod=1.0)
   for i in range(len(target_frames)):
-    print 'Frame:%03d' % i
+    print('Frame:%03d' % i)
     (rf1, rm1, s1, sf1, sm1, u1, ur1) = getRes(target_frames[i])
     rf = rf1 - rf0
     rm = rm1 - rm0
@@ -1170,14 +1170,14 @@ def X_NOT_YET_ExtractHistoryFromFieldByNset():
   import extract
   import tempXY
   odbkey = extract.SelectOdbKey()
-  print odbkey
+  print(odbkey)
   odb = session.odbs[odbkey]
   basename = os.path.basename(odbkey)
   stem = os.path.splitext(basename)[0]
   keys = []
   nsets = extract.GetNsets()
   for nset in nsets:
-    print nset
+    print(nset)
     n = nset.find(' ')
     if ' ' in nset:
       arr = nset.split()
@@ -1187,14 +1187,14 @@ def X_NOT_YET_ExtractHistoryFromFieldByNset():
       set_name = nset
       tags = ['U1']
     for tag in tags:
-      print set_name + ':' + tag
+      print(set_name + ':' + tag)
       extract.XYFromField(odb, set_name, tag, NODAL)
       res = tempXY.AddPrefix(set_name)
       for k in res:
         keys.append(k)
   rpt = getInput("Enter basename of rpt filename",stem)
   if rpt == None:
-    print "rpt出力はキャンセルされました"
+    print("rpt出力はキャンセルされました")
     return
   targets = []
   for key in keys:
@@ -1233,7 +1233,7 @@ def __template():
     try:
       pass
     except Exception as e:
-      print e.message
+      print(e)
       raise
 
 
@@ -1269,13 +1269,13 @@ def testGetVar():
   def test_eq(key, ans, pos=None):
     res = extract.getVar(key, pos)
     if res == ans:
-      print 'OK (' + key + ')'
+      print('OK (' + key + ')')
     else:
-      print 'NG (' + key + ')'
-      print 'expected:'
-      print ans
-      print 'but:'
-      print res
+      print('NG (' + key + ')')
+      print('expected:')
+      print(ans)
+      print('but:')
+      print(res)
   test_eq('Mises', (('S', INTEGRATION_POINT, ((INVARIANT, 'Mises'),)),),)
   test_eq('LE.Max. Principal', (('LE', INTEGRATION_POINT, ((INVARIANT, 'Max. Principal'),)),) )
   test_eq('S11', (('S', INTEGRATION_POINT, ((COMPONENT, 'S11'),)),) )
