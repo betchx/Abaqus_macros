@@ -710,7 +710,7 @@ def M_AssignProperty():
     import os.path
     import csv
     try:
-      fname = getInput('Setting File Name?')
+      fname = getInput('Setting File Name?','Assign.csv')
       #fname = 'MG-24_8'  # for debug
       if not os.path.isfile(fname):
         fname = fname + '.csv'
@@ -769,6 +769,43 @@ def M_DumpPropertyAssignment():
           if not sec.suppressed:
             writer.writerow((model.name,part.name,sec.region[0],sec.sectionName, sec.offset, sec.offsetType))
 
+def M_DumpPartSets():
+  try:
+    import section
+    import regionToolset
+    import displayGroupMdbToolset as dgm
+    import part
+    import material
+    import assembly
+    import optimization
+    import step
+    import interaction
+    import load
+    import mesh
+    import job
+    import sketch
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    import connectorBehavior
+    import os.path
+    import csv
+    import extract
+    model = extract.SelectModel()
+    fname = model.name + '_part_sets.csv'
+    with open(fname, "wb") as f:
+      writer = csv.writer(f)
+      writer.writerow(["#model","Part","Set"])
+      for part in model.parts.values():
+        print part.name
+        for s in part.sets.keys():
+          writer.writerow((model.name,part.name,s))
+  except Exception as e:
+      print e.message
+      raise
+
+
+
 def M_CreateShellSection():
     import section
     import regionToolset
@@ -791,7 +828,7 @@ def M_CreateShellSection():
     import csv
     try:
       #fname = 'testshell'
-      fname = getInput('Setting File Name?')
+      fname = getInput('Setting File Name?','Prop.csv')
       if not os.path.isfile(fname):
         fname = fname + '.csv'
         if not os.path.isfile(fname):
