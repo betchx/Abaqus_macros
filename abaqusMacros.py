@@ -81,6 +81,7 @@ def BT_RemoveTempXYs():
 def C_Precision4():
     import sketch
     mdb.models[0].sketches['__profile__'].sketchOptions.setValues(decimalPlaces=4)
+ # type: ignore
 
 def C_ResultU3():
     session.viewports[session.currentViewportName].odbDisplay.setPrimaryVariable(
@@ -1045,7 +1046,7 @@ def O_PlotLoadArrowToNset():
 
 def O_LiveLoadStress():
   import extract
-  from textRepr import prettyPrint as pp
+  from textRepr import prettyPrint as pp # type: ignore
 
   def getRes(frame):
     fo = frame.fieldOutputs
