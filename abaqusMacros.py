@@ -5,8 +5,13 @@ from abaqusConstants import *
 import __main__
 
 #######
+# Prefixのルール
+# A: 作業フォルダのマクロ用に予約（先頭に表示させるため）
+# B: 使用頻度が高いものに使用する．
+# C:
+# Z: 普段使用しないもの．
 
-def A_RotateX90Neg():
+def BA_RotateX90Neg():
     try:
       import visualization
       import extract
@@ -15,19 +20,19 @@ def A_RotateX90Neg():
       print e.message
       raise
 
-def A_RotateZ180():
+def BA_RotateZ180():
     import visualization
     import extract
     extract.cvp().view.rotate(xAngle=0, yAngle=0, zAngle=180, mode=MODEL)
 
-def B_Back2White():
+def BB_Back2White():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
     session.graphicsOptions.setValues(backgroundStyle=SOLID, 
         backgroundColor='#FFFFFF')
 
-def B_Back2Gradation():
+def BB_Back2Gradation():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -35,7 +40,7 @@ def B_Back2Gradation():
         backgroundColor='#000054',
         backgroundBottomColor='#7A7A90')
 
-def B_Back2Original():
+def BB_Back2Original():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -43,7 +48,7 @@ def B_Back2Original():
         backgroundColor='#1B2D46',
         backgroundBottomColor='#A3B1C6')
 
-def AA_View4Deform():
+def BD_View4Deform():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -53,25 +58,25 @@ def AA_View4Deform():
         320.55, -214.08, -17.911), viewOffsetX=0, viewOffsetY=0, autoFit=OFF)
 
 #
-def D_RemoveAllXY():
+def BP_RemoveAllXY():
     import xyPlot
     for xy in session.xyDataObjects.keys():
       del session.xyDataObjects[xy]
 
 # alias
-def D_ClearAllXY():
-  RemoveAllXY()
+def BP_ClearAllXY():
+  BP_RemoveAllXY()
 
-def B_AddPrefixToTempXYandRetern():
+def BT_AddPrefixToTempXYandReturn():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
     import extract
-    B_AddPrefixToTempXY()
+    BT_AddPrefixToTempXY()
     session.viewports[session.currentViewportName].odbDisplay.display.setValues(plotState=(UNDEFORMED, ))
     session.viewports[session.currentViewportName].setValues(displayedObject=extract.currentOdb())
 
-def B_AddPrefixToTempXY():
+def BT_AddPrefixToTempXY():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -82,7 +87,7 @@ def B_AddPrefixToTempXY():
         session.xyDataObjects[xy].setValues(legendLabel=pre+xy)
         session.xyDataObjects.changeKey(xy, pre + xy)
 
-def B_RemoveTempXYs():
+def BT_RemoveTempXYs():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
@@ -362,7 +367,7 @@ def E_SaveAllPlotAsXYXYForamt():
           res.append("")
       out.writerow(res)
 
-def E_SaveAllPlotAsTimeSerieseFormat():
+def E_SaveAllPlotAsTimeSeriesFormat():
   import visualization
   import xyPlot
   import displayGroupOdbToolset as dgo
@@ -1196,7 +1201,7 @@ def X_NOT_YET_ExtractHistoryFromFieldByNset():
     targets.append( session.xyDataObjects[key] )
   session.writeXYReport(fileName=rpt + '.rpt', appendMode=OFF, xyData=tuple(targets))
 
-def A_Z_ModelVisualSetup():
+def Z_ModelVisualSetup():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
