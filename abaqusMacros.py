@@ -24,8 +24,7 @@ def BA_RotateZ180():
     extract.cvp().view.rotate(xAngle=0, yAngle=0, zAngle=180, mode=MODEL)
 
 def BB_Back2White():
-    session.graphicsOptions.setValues(backgroundStyle=SOLID, 
-        backgroundColor='#FFFFFF')
+    session.graphicsOptions.setValues(backgroundStyle=SOLID, backgroundColor='#FFFFFF')
 
 def BB_Back2Gradation():
     session.graphicsOptions.setValues(backgroundStyle=GRADIENT,
@@ -38,10 +37,18 @@ def BB_Back2Original():
         backgroundBottomColor='#A3B1C6')
 
 def BD_View4Deform():
-    session.View(name='User-4', nearPlane=6508.9, farPlane=15050, width=7663.3, 
-        height=4375.9, projection=PARALLEL, cameraPosition=(5878.1, 4197.6, 
-        8612.1), cameraUpVector=(-0.37389, 0.73454, -0.56626), cameraTarget=(
-        320.55, -214.08, -17.911), viewOffsetX=0, viewOffsetY=0, autoFit=OFF)
+    session.View(name='User-4',
+                 nearPlane=6508.9,
+                 farPlane=15050,
+                 width=7663.3,
+                 height=4375.9,
+                 projection=PARALLEL,
+                 cameraPosition=(5878.1, 4197.6, 8612.1),
+                 cameraUpVector=(-0.37389, 0.73454, -0.56626),
+                 cameraTarget=(320.55, -214.08, -17.911),
+                 viewOffsetX=0,
+                 viewOffsetY=0,
+                 autoFit=OFF)
 
 #
 def BP_RemoveAllXY():
@@ -96,8 +103,7 @@ def D_DeformAnimate():
   session.viewports[session.currentViewportName].odbDisplay.commonOptions.setValues(
       deformationScaling=UNIFORM, uniformScaleFactor=factor)
   session.viewports[session.currentViewportName].view.fitView()
-  session.animationController.setValues(animationType=TIME_HISTORY, viewports=(
-    'Viewport: 1', ))
+  session.animationController.setValues(animationType=TIME_HISTORY, viewports=('Viewport: 1', ))
   session.animationController.play(duration=UNLIMITED)
 
 def D_ColorSetting():
