@@ -4,46 +4,63 @@ from abaqus import *
 from abaqusConstants import *
 import __main__
 
+#######
+
+def A_RotateX90Neg():
+    try:
+      import visualization
+      import extract
+      extract.cvp().view.rotate(xAngle=-90, yAngle=0, zAngle=0, mode=MODEL)
+    except Exception as e:
+      print e.message
+      raise
+
+def A_RotateZ180():
+    import visualization
+    import extract
+    extract.cvp().view.rotate(xAngle=0, yAngle=0, zAngle=180, mode=MODEL)
+
+def B_Back2White():
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    session.graphicsOptions.setValues(backgroundStyle=SOLID, 
+        backgroundColor='#FFFFFF')
+
+def B_Back2Gradation():
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    session.graphicsOptions.setValues(backgroundStyle=GRADIENT,
+        backgroundColor='#000054',
+        backgroundBottomColor='#7A7A90')
+
+def B_Back2Original():
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    session.graphicsOptions.setValues(backgroundStyle=GRADIENT,
+        backgroundColor='#1B2D46',
+        backgroundBottomColor='#A3B1C6')
+
+def AA_View4Deform():
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    session.View(name='User-4', nearPlane=6508.9, farPlane=15050, width=7663.3, 
+        height=4375.9, projection=PARALLEL, cameraPosition=(5878.1, 4197.6, 
+        8612.1), cameraUpVector=(-0.37389, 0.73454, -0.56626), cameraTarget=(
+        320.55, -214.08, -17.911), viewOffsetX=0, viewOffsetY=0, autoFit=OFF)
+
 #
-# Note
-#
+def D_RemoveAllXY():
+    import xyPlot
+    for xy in session.xyDataObjects.keys():
+      del session.xyDataObjects[xy]
 
-###############
-## extract
-
-# 
-# def UniaxialGaugeStress(odb, elset, comp = 'S11'):
-# def TriaxialGaugeStress(odb, elset):
-
-# def GetTargetFileName(fname="extract_targets.txt"):
-# def GetSetsAndKey( fname ="target_sets_and_keys.txt" ):
-# def GetElsets():
-# def GetNsets():
-# def getVar(key, pos = None):
-
-# odbやmodelを選択
-# def SelectOdb():          return session.odbs[SelectOdbKey()]
-# def SelectOdbKey():
-# def SelectModel():        return mdb.models[SelectModelKey()]
-# def SelectModelKey():     
-# def currentOdb():         return session.odbs[currentOdbKey()]
-# def currentOdbKey():      return session.viewports[session.currentViewportName].odbDisplay.name
-
-
-
-# 集合と出力対象のキーをファイルから取得する．
-# def GetSetsAndKey( fname ="target_sets_and_keys.txt" ):
-
-# Extract XY data from results
-# def XYFromField(odb, sets, key, given_pos=None):
-
-##############
-## TempXY
-
-# def TempKeys():
-# def AddPrefix(pre):
-# def Sum(newName=""):
-# def RemoveAll():
+# alias
+def D_ClearAllXY():
+  RemoveAllXY()
 
 def B_AddPrefixToTempXYandRetern():
     import visualization
@@ -73,23 +90,16 @@ def B_RemoveTempXYs():
       if xy[0] == '_':
         del session.xyDataObjects[xy]
 
-def E_SumTempXY():
+def C_Precision4():
+    import sketch
+    mdb.models[0].sketches['__profile__'].sketchOptions.setValues(decimalPlaces=4)
+
+def C_ResultU3():
     import visualization
     import xyPlot
     import displayGroupOdbToolset as dgo
-    import extract
-    targets = []
-    for xy in session.xyDataObjects.keys():
-      if xy[0] == '_':
-        targets.append(session.xyDataObjects[xy])
-    ans = sum(targets)
-    newName = getInput('Enter Name')
-    tmpName = ans.name
-    session.xyDataObjects.changeKey(tmpName, newName)
-    RemoveTempXYs()
-    session.viewports[session.currentViewportName].odbDisplay.display.setValues(plotState=(UNDEFORMED, ))
-    session.viewports[session.currentViewportName].setValues(displayedObject=extract.currentOdb())
-
+    session.viewports[session.currentViewportName].odbDisplay.setPrimaryVariable(
+        variableLabel='U', outputPosition=NODAL, refinement=(COMPONENT, 'U3'))
 
 def D_DeformAnimate():
   import visualization
@@ -115,6 +125,178 @@ def D_DeformAnimate():
     'Viewport: 1', ))
   session.animationController.play(duration=UNLIMITED)
 
+def D_ColorSetting():
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    session.viewports[session.currentViewportName].enableMultipleColors()
+    session.viewports[session.currentViewportName].setColor(initialColor='#BDBDBD')
+    cmap = session.viewports[session.currentViewportName].colorMappings['Material']
+    cmap.updateOverrides(overrides={'FRP':(True, '#D08058', 'Default', '#D08058'),
+        'STEEL': (True, '#999999', 'Default', '#999999')})
+    session.viewports[session.currentViewportName].setColor(colorMapping=cmap)
+    session.viewports[session.currentViewportName].disableMultipleColors()
+
+def D_LegendBack2White():
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    session.viewports[session.currentViewportName].viewportAnnotationOptions.setValues(
+        legendBackgroundStyle=MATCH, compass=OFF)
+
+def D_CreateRangeStepForNB():
+    # 防音壁の計算での応力範囲ステップを作成し選択する．
+    # 計算にはReturnステップが必要．
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    #: ---- Creating Field Output From Frames ----
+    #odbFullPath = 'D:/DATA/Projects/H27-NB/Separate/ana/RF2/RF2.odb'
+    keys = session.odbs.keys()
+    odbFullPath = keys[0]
+    currentOdb = session.odbs[odbFullPath]
+    frames_in_step_2=session.odbs[odbFullPath].steps['In2Out'].frames
+    frames_in_step_3=session.odbs[odbFullPath].steps['Out2In'].frames
+    s2f0_S=frames_in_step_2[-1].fieldOutputs['S']
+    s3f0_S=frames_in_step_3[-1].fieldOutputs['S']
+    tmpField_S = s3f0_S*-1+s2f0_S
+    s2f0_U=frames_in_step_2[-1].fieldOutputs['U']
+    s3f0_U=frames_in_step_3[-1].fieldOutputs['U']
+    tmpField_U = s3f0_U*-1+s2f0_U
+    scratchOdb = session.ScratchOdb(odb=currentOdb)
+    sessionStep = scratchOdb.Step(name='Session Step',description='Step for Viewer non-persistent fields', domain=TIME, timePeriod=1.0)
+    sessionLC = sessionStep.LoadCase(name='Range')
+    reservedFrame = sessionStep.Frame(frameId=0, frameValue=0.0, description='Session Frame')
+    sessionFrame = sessionStep.Frame(loadCase=sessionLC, description='Load Case: Range; Range by train wind load')
+    sessionField = sessionFrame.FieldOutput(name='S', description='Stress components', field=tmpField_S)
+    sessionField = sessionFrame.FieldOutput(name='U', description='Spatial displacement', field=tmpField_U)
+    #: ---- End of Creating Field Output From Frames ----
+    session.viewports[session.currentViewportName].odbDisplay.setFrame(step='Session Step', 
+        frame=1)
+    session.viewports[session.currentViewportName].odbDisplay.display.setValues(plotState=(
+        CONTOURS_ON_UNDEF, ))
+    session.viewports[session.currentViewportName].odbDisplay.setPrimaryVariable(
+        variableLabel='S', outputPosition=INTEGRATION_POINT, refinement=(
+        INVARIANT, 'Max. In-Plane Principal'), )
+
+# 集合からXYデータの結果を取得するマクロ
+def E_ExtractXYFromField():
+  try:
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    import os.path
+    import tempXY
+    import extract
+    #
+    def SetNotFound(set_name):
+      print "Warnig: set " + set_name + " is not exist. Skipped"
+    odbkey = extract.SelectOdbKey()
+    print odbkey
+    odb = session.odbs[odbkey]
+    basename = os.path.basename(odbkey)
+    stem = os.path.splitext(basename)[0]
+    keys = []
+    items = extract.GetSetsAndKey()
+    for item in items:
+      print item
+      if ',' in item:
+        arr = item.split(',')
+        set_name = arr[0].strip()
+        if set_name in odb.rootAssembly.elementSets.keys() or set_name in odb.rootAssembly.nodeSets.keys():
+          tags = [x.strip() for x in arr[1:] ]
+        else:
+          SetNotFound(set_name)
+          tags = [] # empty list ==> to skip XYFromField call.
+      else:
+        set_name = item
+        if item in odb.rootAssembly.elementSets.keys():
+          tags = ['S11']
+        elif item in odb.rootAssembly.nodeSets.keys():
+          tags = ['U']
+        else:
+          SetNotFound(set_name)
+          tags = [] # empty list ==> to skip XYFromField call.
+      for tag in tags:
+        print set_name + ':' + tag
+        extract.XYFromField(odb, set_name, tag)
+        res = tempXY.AddPrefix(set_name)
+        for k in res:
+          keys.append(k)
+    rpt = getInput("Enter basename of rpt filename",stem)
+    if rpt == None:
+      print "rpt出力はキャンセルされました"
+      return
+    targets = []
+    for key in keys:
+      targets.append( session.xyDataObjects[key] )
+    session.writeXYReport(fileName=rpt + '.rpt', appendMode=OFF, xyData=tuple(targets))
+  except Exception as e:
+    print e.message
+    raise
+
+
+# 集合からXYデータの結果を取得するマクロ
+def E_ExtractXYFromFieldWithSum():
+  try:
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    import os.path
+    import tempXY
+    import extract
+    #
+    def SetNotFound(set_name):
+      print "Warnig: set " + set_name + " is not exist. Skipped"
+    odbkey = extract.SelectOdbKey()
+    print odbkey
+    odb = session.odbs[odbkey]
+    basename = os.path.basename(odbkey)
+    stem = os.path.splitext(basename)[0]
+    keys = []
+    items = extract.GetSetsAndKey()
+    for item in items:
+      print item
+      if ',' in item:
+        arr = item.split(',')
+        set_name = arr[0].strip()
+        if set_name in odb.rootAssembly.elementSets.keys() or set_name in odb.rootAssembly.nodeSets.keys():
+          tags = [x.strip() for x in arr[1:] ]
+        else:
+          SetNotFound(set_name)
+          tags = [] # empty list ==> to skip XYFromField call.
+      else:
+        set_name = item
+        if item in odb.rootAssembly.elementSets.keys():
+          tags = ['S11']
+        elif item in odb.rootAssembly.nodeSets.keys():
+          tags = ['U']
+        else:
+          SetNotFound(set_name)
+          tags = [] # empty list ==> to skip XYFromField call.
+      for tag in tags:
+        print set_name + ':' + tag
+        extract.XYFromField(odb, set_name, tag)
+        #res = tempXY.AddPrefix(set_name)
+        targets = []
+        for xy in session.xyDataObjects.keys():
+          if xy[0] == '_':
+            targets.append(session.xyDataObjects[xy])
+        res = sum(targets)
+        session.xyDataObjects.changeKey(res.name, set_name)
+        RemoveTempXYs()
+        keys.append(set_name)
+    rpt = getInput("Enter basename of rpt filename",stem)
+    if rpt == None:
+      print "rpt出力はキャンセルされました"
+      return
+    targets = []
+    for key in keys:
+      targets.append( session.xyDataObjects[key] )
+    session.writeXYReport(fileName=rpt + '.rpt', appendMode=OFF, xyData=tuple(targets))
+  except Exception as e:
+    print e.message
+    raise
 
 def E_ExtractStressHistoryFromFieldByElset():
   import visualization
@@ -143,47 +325,6 @@ def E_ExtractStressHistoryFromFieldByElset():
   for key in keys:
     targets.append( session.xyDataObjects[key] )
   session.writeXYReport(fileName=rpt, appendMode=OFF, xyData=tuple(targets))
-
-def checkPath():
-  msg = ""
-  import sys
-  for p in sys.path:
-    msg += p + "\n"
-  getInput(msg)
-
-
-#def CheckImport():
-#  import tempXY
-  #####
-  #import extract
-  #res = extract.GetElsets()
-  #if res is None:
-  #  getInput("None")
-  #else:
-  #  msg = ""
-  #  for i in res:
-  #    msg += i + "\n"
-  #  getInput(msg)
-
-
-def C_Precision4():
-    import sketch
-    mdb.models[0].sketches['__profile__'].sketchOptions.setValues(decimalPlaces=4)
-
-def A_RotateX90Neg():
-    try:
-      import visualization
-      import extract
-      extract.cvp().view.rotate(xAngle=-90, yAngle=0, zAngle=0, mode=MODEL)
-    except Exception as e:
-      print e.message
-      raise
-
-def A_RotateZ180():
-    import visualization
-    import extract
-    extract.cvp().view.rotate(xAngle=0, yAngle=0, zAngle=180, mode=MODEL)
-
 
 def E_SaveAllPlotAsXYXYForamt():
   import visualization
@@ -257,6 +398,351 @@ def E_SaveAllPlotAsTimeSerieseFormat():
         else:
           res.append("")
       out.writerow(res)
+
+def E_SumTempXY():
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    import extract
+    targets = []
+    for xy in session.xyDataObjects.keys():
+      if xy[0] == '_':
+        targets.append(session.xyDataObjects[xy])
+    ans = sum(targets)
+    newName = getInput('Enter Name')
+    tmpName = ans.name
+    session.xyDataObjects.changeKey(tmpName, newName)
+    RemoveTempXYs()
+    session.viewports[session.currentViewportName].odbDisplay.display.setValues(plotState=(UNDEFORMED, ))
+    session.viewports[session.currentViewportName].setValues(displayedObject=extract.currentOdb())
+
+def F_SelectModes():
+  try:
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    import extract
+    odb = extract.currentOdb()
+    #odbName=session.viewports[session.currentViewportName].odbDisplay.name
+    #session.odbData[odbName].setValues(activeFrames=(('Freq', ('1:15:7', )), ))
+    modes = getInput("Input Mode numbers with space separated")
+    if modes == '':
+      return
+    nm = odb.steps.values()[0].name
+    #print nm
+    #print modes
+    lst = [ x for x in modes.split(' ') ]
+    #print lst
+    tpl = tuple(lst)
+    #print tpl
+    odbName=session.viewports[session.currentViewportName].odbDisplay.name
+    session.odbData[odbName].setValues(activeFrames=((nm, tpl), ))
+    #
+  except Exception as e:
+    print e.message
+    raise
+
+#
+# """ 集合FROMにある頂点から，集合TO内のもっとも近い頂点に接続するワイヤを作成する  """
+def M_ConnectWireToClosest():
+    import section
+    import regionToolset
+    import displayGroupMdbToolset as dgm
+    import part
+    import material
+    import assembly
+    import optimization
+    import step
+    import interaction
+    import load
+    import mesh
+    import job
+    import sketch
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    import connectorBehavior
+    try:
+      # マクロで保存したもの．
+      #a = mdb.models['Model-1'].rootAssembly
+      #v11 = a.instances['Track'].vertices
+      #a.WirePolyLine(points=((v11[140], v11[251]), (v11[141], v11[145]), (v11[136], v11[252]), (v11[137], v11[146])), mergeType=IMPRINT, meshable=OFF)
+      #
+      #########
+      # Assemblyの取得
+      n = len(mdb.models.keys())
+      print "Number of models is %d" % (n,)
+      if n == 1:
+        a = mdb.models.values()[0].rootAssembly
+      else:
+        keys = mdb.models.keys()
+        msg = "\n".join([ "%d: %s" % (i , key[i]) for i in range(n)])
+        res = getInput("Which model? input number\n"+msg)
+        i = int(res) if res.isdigit() else 0
+        if i < 0: i = 0
+        if i >= num: i = num - 1
+        a = mdb.models[keys[i]].rootAssembly
+      print "Target model is %s" % (a.modelName, )
+      ####
+      # 必要なセットがあるかどうかのチェック
+      #####
+      # エッジ数の保存   (作成された集合の判定用）
+      original_edge_count = len(a.edges)
+      print "Original number of edges is %d" % original_edge_count
+      #####
+      # 対象頂点集合の取得
+      def getSet(asm, key):
+        if "." in key:
+          i, n = key.split(".")
+          if asm.instances.has_key(i):
+            ins = asm.instances[i]
+            if ins.sets.has_key(n):
+              return asm.instances[i].sets[n]
+        if asm.sets.has_key(key):
+          return asm.sets[key]
+        return None
+      #
+      if a.sets.has_key("FROM"):
+        from_key = "FROM"
+      else:
+        from_key = getInput("起点となる集合名を指定してください")
+      from_set = getSet(a, from_key)
+      if from_set is None:
+        print "エラー：アセンブリにワイヤ探索起点の集合「%s」が見つかりません．" % (from_key,)
+        return
+      origin = from_set.vertices
+      print "Number of vertices in the %s set is %d" % (from_key, len(origin))
+      #
+      if a.sets.has_key("TO"):
+        to_key = "TO"
+      else:
+        to_key = getInput("終点の候補となる集合名を指定してください")
+      to_set = getSet(a, to_key)
+      if to_set is None:
+        print "エラー：アセンブリにワイヤ接続先候補頂点を含む集合「%s」が見つかりません．" % (to_key,)
+        return
+      dest = to_set.vertices
+      print "Number of vertices in the %s set is %d" % (to_key, len(dest) )
+      if a.sets.has_key("CONNECT_FROM_TO"):
+        print "エラー： 作成したワイヤを保存する集合「CONNECT_FROM_TO」がすでに存在します．削除するか名前を変更して下さい．"
+        return
+      ####
+      # 近接頂点の検索
+      points = [v.pointOn[0] for v in origin]
+      print "points were created such as (%g, %g, %g)" % points[0]
+      coords = tuple(points)
+      closest = dest.getClosest( coordinates=tuple(points), searchTolerance=1.0)
+      print "closest was created"
+      ####
+      # ペアのタプルの作成
+      pair = tuple( zip([ v for v in origin], [ closest[k][0] for k in closest.keys()] ))
+      print "Vertices pair list was created."
+      ####
+      # ラインの作成
+      print "Creating Wires."
+      a.WirePolyLine(points=pair, mergeType=IMPRINT, meshable=OFF)
+      print "Done."
+      ####
+      # 集合作成のためのエッジ集合数の再取得
+      after_edge_count = len(a.edges)
+      print "Number of edges after were creation is %d" % after_edge_count
+      ####
+      # エッジの差分を取得
+      new_edge_count = after_edge_count - original_edge_count
+      print "Number of created edges in new Wire is %d" % new_edge_count
+      ####
+      # エッジの集合を作成
+      #    新たに作成されたフィーチャーのエッジは若い番号側に保存されるので，
+      #  作成された数がわかれば対象を選定できる．
+      a.Set(name="CONNECT_FROM_TO", edges=a.edges[0:(new_edge_count)])
+      print "Created edges were saved in the new set of CONNECT_FROM_TO."
+    except Exception as e:
+      info  = sys.exc_info()
+      c, ax, t = info
+      #print type(c)
+      #print type(ax)
+      #print type(t)
+      #print "exception class %s" % c
+      #for x in dir(ax.message):
+      #  print x
+      #print type(ax.message)
+      #print "Message:"
+      print "Error:",ax.message
+      #print unicode(ax.message, 'shift_jis')
+      #print "Args:"
+      #for x in ax.args:
+      #  print x
+      #print "exit"
+      with open("MacroError.txt","wb") as f:
+        f.write("Message:\n")
+        f.write(ax.message)
+        f.write("\nArgs:\n")
+        for x in ax.args:
+          f.write(x)
+          f.write("\n")
+      raise
+
+def M_AssignProperty():
+    import section
+    import regionToolset
+    import displayGroupMdbToolset as dgm
+    import part
+    import material
+    import assembly
+    import optimization
+    import step
+    import interaction
+    import load
+    import mesh
+    import job
+    import sketch
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    import connectorBehavior
+    import os.path
+    import csv
+    try:
+      fname = getInput('Setting File Name?','Assign.csv')
+      #fname = 'MG-24_8'  # for debug
+      if not os.path.isfile(fname):
+        fname = fname + '.csv'
+        if not os.path.isfile(fname):
+          print "File is not found"
+          return
+      print 'Open file:' + fname
+      with open(fname, "rb") as f:
+        reader = csv.reader(f)
+        for row in reader:
+          model, part, set, sec, offset = row[0:5]
+          if not model[0] == '#':
+            print row
+            p = mdb.models[model].parts[part]
+            r = p.sets[set]
+            p.SectionAssignment(region=r,
+              sectionName=sec,
+              offset=float(offset),
+              offsetType=SINGLE_VALUE,
+              offsetField='',
+              thicknessAssignment=FROM_SECTION)
+    except Exception as e:
+      print e.message
+      raise
+
+def M_DumpPartSets():
+  try:
+    import section
+    import regionToolset
+    import displayGroupMdbToolset as dgm
+    import part
+    import material
+    import assembly
+    import optimization
+    import step
+    import interaction
+    import load
+    import mesh
+    import job
+    import sketch
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    import connectorBehavior
+    import os.path
+    import csv
+    import extract
+    model = extract.SelectModel()
+    fname = model.name + '_part_sets.csv'
+    with open(fname, "wb") as f:
+      writer = csv.writer(f)
+      writer.writerow(["#model","Part","Set"])
+      for part in model.parts.values():
+        print part.name
+        for s in part.sets.keys():
+          writer.writerow((model.name,part.name,s))
+  except Exception as e:
+      print e.message
+      raise
+
+def M_DumpPropertyAssignment():
+    import section
+    import regionToolset
+    import displayGroupMdbToolset as dgm
+    import part
+    import material
+    import assembly
+    import optimization
+    import step
+    import interaction
+    import load
+    import mesh
+    import job
+    import sketch
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    import connectorBehavior
+    import os.path
+    import csv
+    import extract
+    model = extract.SelectModel()
+    fname = model.name + '_section_assignments.csv'
+    with open(fname, "wb") as f:
+      writer = csv.writer(f)
+      writer.writerow(["#model","Part","Set","Section","Offset"])
+      for part in model.parts.values():
+        print part.name
+        for sec in part.sectionAssignments:
+          print '   ' + sec.sectionName
+          if not sec.suppressed:
+            writer.writerow((model.name,part.name,sec.region[0],sec.sectionName, sec.offset, sec.offsetType))
+
+def M_CreateShellSection():
+    import section
+    import regionToolset
+    import displayGroupMdbToolset as dgm
+    import part
+    import material
+    import assembly
+    import optimization
+    import step
+    import interaction
+    import load
+    import mesh
+    import job
+    import sketch
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    import connectorBehavior
+    import os.path
+    import csv
+    try:
+      #fname = 'testshell'
+      fname = getInput('Setting File Name?','Prop.csv')
+      if not os.path.isfile(fname):
+        fname = fname + '.csv'
+        if not os.path.isfile(fname):
+          print "File is not found"
+          return
+      print 'read:'+ fname
+      with open(fname, 'rb') as f:
+        print 'opened'
+        reader = csv.reader(f)
+        print 'reader created'
+        for row in reader:
+          print row
+          model, name, mat, thickness = row
+          if not model[0] == '#':
+            t=float(thickness)*0.001
+            mdb.models[model].HomogeneousShellSection(name=name, 
+              preIntegrate=OFF, material=mat, thicknessType=UNIFORM, 
+              thickness=t, thicknessField='', idealization=NO_IDEALIZATION, 
+              poissonDefinition=DEFAULT, thicknessModulus=None, temperature=GRADIENT, 
+              useDensity=OFF, integrationRule=SIMPSON, numIntPts=5)
+    except Exception as e:
+      print e.message
+      raise
 
 def M_CreateCouplingAtEndsOfBoltsRivets():
  try:
@@ -421,614 +907,6 @@ def M_CreateCouplingAtEndsOfBoltsRivets():
    c, ax, t = info
    print "Error:",ax.message
 
-
-
-# 防音壁の計算での応力範囲ステップを作成し選択する．
-# 計算にはReturnステップが必要．
-
-def D_CreateRangeStepForNB():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    #: ---- Creating Field Output From Frames ----
-    #odbFullPath = 'D:/DATA/Projects/H27-NB/Separate/ana/RF2/RF2.odb'
-    keys = session.odbs.keys()
-    odbFullPath = keys[0]
-    currentOdb = session.odbs[odbFullPath]
-    frames_in_step_2=session.odbs[odbFullPath].steps['In2Out'].frames
-    frames_in_step_3=session.odbs[odbFullPath].steps['Out2In'].frames
-    s2f0_S=frames_in_step_2[-1].fieldOutputs['S']
-    s3f0_S=frames_in_step_3[-1].fieldOutputs['S']
-    tmpField_S = s3f0_S*-1+s2f0_S
-    s2f0_U=frames_in_step_2[-1].fieldOutputs['U']
-    s3f0_U=frames_in_step_3[-1].fieldOutputs['U']
-    tmpField_U = s3f0_U*-1+s2f0_U
-    scratchOdb = session.ScratchOdb(odb=currentOdb)
-    sessionStep = scratchOdb.Step(name='Session Step',description='Step for Viewer non-persistent fields', domain=TIME, timePeriod=1.0)
-    sessionLC = sessionStep.LoadCase(name='Range')
-    reservedFrame = sessionStep.Frame(frameId=0, frameValue=0.0, description='Session Frame')
-    sessionFrame = sessionStep.Frame(loadCase=sessionLC, description='Load Case: Range; Range by train wind load')
-    sessionField = sessionFrame.FieldOutput(name='S', description='Stress components', field=tmpField_S)
-    sessionField = sessionFrame.FieldOutput(name='U', description='Spatial displacement', field=tmpField_U)
-    #: ---- End of Creating Field Output From Frames ----
-    session.viewports[session.currentViewportName].odbDisplay.setFrame(step='Session Step', 
-        frame=1)
-    session.viewports[session.currentViewportName].odbDisplay.display.setValues(plotState=(
-        CONTOURS_ON_UNDEF, ))
-    session.viewports[session.currentViewportName].odbDisplay.setPrimaryVariable(
-        variableLabel='S', outputPosition=INTEGRATION_POINT, refinement=(
-        INVARIANT, 'Max. In-Plane Principal'), )
-
-
-def B_Back2White():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    session.graphicsOptions.setValues(backgroundStyle=SOLID, 
-        backgroundColor='#FFFFFF')
-
-#
-def D_RemoveAllXY():
-    import xyPlot
-    for xy in session.xyDataObjects.keys():
-      del session.xyDataObjects[xy]
-
-# alias
-def D_ClearAllXY():
-  RemoveAllXY()
-
-#
-# """ 集合FROMにある頂点から，集合TO内のもっとも近い頂点に接続するワイヤを作成する  """
-def M_ConnectWireToClosest():
-    import section
-    import regionToolset
-    import displayGroupMdbToolset as dgm
-    import part
-    import material
-    import assembly
-    import optimization
-    import step
-    import interaction
-    import load
-    import mesh
-    import job
-    import sketch
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    import connectorBehavior
-    try:
-      # マクロで保存したもの．
-      #a = mdb.models['Model-1'].rootAssembly
-      #v11 = a.instances['Track'].vertices
-      #a.WirePolyLine(points=((v11[140], v11[251]), (v11[141], v11[145]), (v11[136], v11[252]), (v11[137], v11[146])), mergeType=IMPRINT, meshable=OFF)
-      #
-      #########
-      # Assemblyの取得
-      n = len(mdb.models.keys())
-      print "Number of models is %d" % (n,)
-      if n == 1:
-        a = mdb.models.values()[0].rootAssembly
-      else:
-        keys = mdb.models.keys()
-        msg = "\n".join([ "%d: %s" % (i , key[i]) for i in range(n)])
-        res = getInput("Which model? input number\n"+msg)
-        i = int(res) if res.isdigit() else 0
-        if i < 0: i = 0
-        if i >= num: i = num - 1
-        a = mdb.models[keys[i]].rootAssembly
-      print "Target model is %s" % (a.modelName, )
-      ####
-      # 必要なセットがあるかどうかのチェック
-      #####
-      # エッジ数の保存   (作成された集合の判定用）
-      original_edge_count = len(a.edges)
-      print "Original number of edges is %d" % original_edge_count
-      #####
-      # 対象頂点集合の取得
-      def getSet(asm, key):
-        if "." in key:
-          i, n = key.split(".")
-          if asm.instances.has_key(i):
-            ins = asm.instances[i]
-            if ins.sets.has_key(n):
-              return asm.instances[i].sets[n]
-        if asm.sets.has_key(key):
-          return asm.sets[key]
-        return None
-      #
-      if a.sets.has_key("FROM"):
-        from_key = "FROM"
-      else:
-        from_key = getInput("起点となる集合名を指定してください")
-      from_set = getSet(a, from_key)
-      if from_set is None:
-        print "エラー：アセンブリにワイヤ探索起点の集合「%s」が見つかりません．" % (from_key,)
-        return
-      origin = from_set.vertices
-      print "Number of vertices in the %s set is %d" % (from_key, len(origin))
-      #
-      if a.sets.has_key("TO"):
-        to_key = "TO"
-      else:
-        to_key = getInput("終点の候補となる集合名を指定してください")
-      to_set = getSet(a, to_key)
-      if to_set is None:
-        print "エラー：アセンブリにワイヤ接続先候補頂点を含む集合「%s」が見つかりません．" % (to_key,)
-        return
-      dest = to_set.vertices
-      print "Number of vertices in the %s set is %d" % (to_key, len(dest) )
-      if a.sets.has_key("CONNECT_FROM_TO"):
-        print "エラー： 作成したワイヤを保存する集合「CONNECT_FROM_TO」がすでに存在します．削除するか名前を変更して下さい．"
-        return
-      ####
-      # 近接頂点の検索
-      points = [v.pointOn[0] for v in origin]
-      print "points were created such as (%g, %g, %g)" % points[0]
-      coords = tuple(points)
-      closest = dest.getClosest( coordinates=tuple(points), searchTolerance=1.0)
-      print "closest was created"
-      ####
-      # ペアのタプルの作成
-      pair = tuple( zip([ v for v in origin], [ closest[k][0] for k in closest.keys()] ))
-      print "Vertices pair list was created."
-      ####
-      # ラインの作成
-      print "Creating Wires."
-      a.WirePolyLine(points=pair, mergeType=IMPRINT, meshable=OFF)
-      print "Done."
-      ####
-      # 集合作成のためのエッジ集合数の再取得
-      after_edge_count = len(a.edges)
-      print "Number of edges after were creation is %d" % after_edge_count
-      ####
-      # エッジの差分を取得
-      new_edge_count = after_edge_count - original_edge_count
-      print "Number of created edges in new Wire is %d" % new_edge_count
-      ####
-      # エッジの集合を作成
-      #    新たに作成されたフィーチャーのエッジは若い番号側に保存されるので，
-      #  作成された数がわかれば対象を選定できる．
-      a.Set(name="CONNECT_FROM_TO", edges=a.edges[0:(new_edge_count)])
-      print "Created edges were saved in the new set of CONNECT_FROM_TO."
-    except Exception as e:
-      info  = sys.exc_info()
-      c, ax, t = info
-      #print type(c)
-      #print type(ax)
-      #print type(t)
-      #print "exception class %s" % c
-      #for x in dir(ax.message):
-      #  print x
-      #print type(ax.message)
-      #print "Message:"
-      print "Error:",ax.message
-      #print unicode(ax.message, 'shift_jis')
-      #print "Args:"
-      #for x in ax.args:
-      #  print x
-      #print "exit"
-      with open("MacroError.txt","wb") as f:
-        f.write("Message:\n")
-        f.write(ax.message)
-        f.write("\nArgs:\n")
-        for x in ax.args:
-          f.write(x)
-          f.write("\n")
-      raise
-
-
-def B_Back2Gradation():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    session.graphicsOptions.setValues(backgroundStyle=GRADIENT,
-        backgroundColor='#000054',
-        backgroundBottomColor='#7A7A90')
-
-def B_Back2Original():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    session.graphicsOptions.setValues(backgroundStyle=GRADIENT,
-        backgroundColor='#1B2D46',
-        backgroundBottomColor='#A3B1C6')
-
-
-def D_ColorSetting():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    session.viewports[session.currentViewportName].enableMultipleColors()
-    session.viewports[session.currentViewportName].setColor(initialColor='#BDBDBD')
-    cmap = session.viewports[session.currentViewportName].colorMappings['Material']
-    cmap.updateOverrides(overrides={'FRP':(True, '#D08058', 'Default', '#D08058'),
-        'STEEL': (True, '#999999', 'Default', '#999999')})
-    session.viewports[session.currentViewportName].setColor(colorMapping=cmap)
-    session.viewports[session.currentViewportName].disableMultipleColors()
-
-
-# 節点の結果を出力するマクロ
-def X_NOT_YET_ExtractHistoryFromFieldByNset():
-  import visualization
-  import xyPlot
-  import displayGroupOdbToolset as dgo
-  #from extract import SelectOdb, GetElsets, UniaxialGaugeStress
-  import os.path
-  import extract
-  import tempXY
-  odbkey = extract.SelectOdbKey()
-  print odbkey
-  odb = session.odbs[odbkey]
-  basename = os.path.basename(odbkey)
-  stem = os.path.splitext(basename)[0]
-  keys = []
-  nsets = extract.GetNsets()
-  for nset in nsets:
-    print nset
-    n = nset.find(' ')
-    if ' ' in nset:
-      arr = nset.split()
-      set_name = arr[0]
-      tags = arr[1:]
-    else:
-      set_name = nset
-      tags = ['U1']
-    for tag in tags:
-      print set_name + ':' + tag
-      extract.XYFromField(odb, set_name, tag, NODAL)
-      res = tempXY.AddPrefix(set_name)
-      for k in res:
-        keys.append(k)
-  rpt = getInput("Enter basename of rpt filename",stem)
-  if rpt == None:
-    print "rpt出力はキャンセルされました"
-    return
-  targets = []
-  for key in keys:
-    targets.append( session.xyDataObjects[key] )
-  session.writeXYReport(fileName=rpt + '.rpt', appendMode=OFF, xyData=tuple(targets))
-
-def M_AssignProperty():
-    import section
-    import regionToolset
-    import displayGroupMdbToolset as dgm
-    import part
-    import material
-    import assembly
-    import optimization
-    import step
-    import interaction
-    import load
-    import mesh
-    import job
-    import sketch
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    import connectorBehavior
-    import os.path
-    import csv
-    try:
-      fname = getInput('Setting File Name?','Assign.csv')
-      #fname = 'MG-24_8'  # for debug
-      if not os.path.isfile(fname):
-        fname = fname + '.csv'
-        if not os.path.isfile(fname):
-          print "File is not found"
-          return
-      print 'Open file:' + fname
-      with open(fname, "rb") as f:
-        reader = csv.reader(f)
-        for row in reader:
-          model, part, set, sec, offset = row[0:5]
-          if not model[0] == '#':
-            print row
-            p = mdb.models[model].parts[part]
-            r = p.sets[set]
-            p.SectionAssignment(region=r,
-              sectionName=sec,
-              offset=float(offset),
-              offsetType=SINGLE_VALUE,
-              offsetField='',
-              thicknessAssignment=FROM_SECTION)
-    except Exception as e:
-      print e.message
-      raise
-
-def M_DumpPropertyAssignment():
-    import section
-    import regionToolset
-    import displayGroupMdbToolset as dgm
-    import part
-    import material
-    import assembly
-    import optimization
-    import step
-    import interaction
-    import load
-    import mesh
-    import job
-    import sketch
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    import connectorBehavior
-    import os.path
-    import csv
-    import extract
-    model = extract.SelectModel()
-    fname = model.name + '_section_assignments.csv'
-    with open(fname, "wb") as f:
-      writer = csv.writer(f)
-      writer.writerow(["#model","Part","Set","Section","Offset"])
-      for part in model.parts.values():
-        print part.name
-        for sec in part.sectionAssignments:
-          print '   ' + sec.sectionName
-          if not sec.suppressed:
-            writer.writerow((model.name,part.name,sec.region[0],sec.sectionName, sec.offset, sec.offsetType))
-
-def M_DumpPartSets():
-  try:
-    import section
-    import regionToolset
-    import displayGroupMdbToolset as dgm
-    import part
-    import material
-    import assembly
-    import optimization
-    import step
-    import interaction
-    import load
-    import mesh
-    import job
-    import sketch
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    import connectorBehavior
-    import os.path
-    import csv
-    import extract
-    model = extract.SelectModel()
-    fname = model.name + '_part_sets.csv'
-    with open(fname, "wb") as f:
-      writer = csv.writer(f)
-      writer.writerow(["#model","Part","Set"])
-      for part in model.parts.values():
-        print part.name
-        for s in part.sets.keys():
-          writer.writerow((model.name,part.name,s))
-  except Exception as e:
-      print e.message
-      raise
-
-
-
-def M_CreateShellSection():
-    import section
-    import regionToolset
-    import displayGroupMdbToolset as dgm
-    import part
-    import material
-    import assembly
-    import optimization
-    import step
-    import interaction
-    import load
-    import mesh
-    import job
-    import sketch
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    import connectorBehavior
-    import os.path
-    import csv
-    try:
-      #fname = 'testshell'
-      fname = getInput('Setting File Name?','Prop.csv')
-      if not os.path.isfile(fname):
-        fname = fname + '.csv'
-        if not os.path.isfile(fname):
-          print "File is not found"
-          return
-      print 'read:'+ fname
-      with open(fname, 'rb') as f:
-        print 'opened'
-        reader = csv.reader(f)
-        print 'reader created'
-        for row in reader:
-          print row
-          model, name, mat, thickness = row
-          if not model[0] == '#':
-            t=float(thickness)*0.001
-            mdb.models[model].HomogeneousShellSection(name=name, 
-              preIntegrate=OFF, material=mat, thicknessType=UNIFORM, 
-              thickness=t, thicknessField='', idealization=NO_IDEALIZATION, 
-              poissonDefinition=DEFAULT, thicknessModulus=None, temperature=GRADIENT, 
-              useDensity=OFF, integrationRule=SIMPSON, numIntPts=5)
-    except Exception as e:
-      print e.message
-      raise
-
-
-
-def testGetVar():
-  def test_eq(key, ans, pos=None):
-    res = extract.getVar(key, pos)
-    if res == ans:
-      print 'OK (' + key + ')'
-    else:
-      print 'NG (' + key + ')'
-      print 'expected:'
-      print ans
-      print 'but:'
-      print res
-  test_eq('Mises', (('S', INTEGRATION_POINT, ((INVARIANT, 'Mises'),)),),)
-  test_eq('LE.Max. Principal', (('LE', INTEGRATION_POINT, ((INVARIANT, 'Max. Principal'),)),) )
-  test_eq('S11', (('S', INTEGRATION_POINT, ((COMPONENT, 'S11'),)),) )
-  test_eq('LE11', (('LE', INTEGRATION_POINT, ((COMPONENT, 'LE11'),)),) )
-  test_eq('LE.LE11', (('LE', ELEMENT_NODAL, ((COMPONENT, 'LE11'),)),) , ELEMENT_NODAL)
-  test_eq('UR1', (('UR', NODAL, ((COMPONENT, 'UR1'),)),) )
-  test_eq('U1', (('U', NODAL, ((COMPONENT, 'U1'),)),) )
-  test_eq('RF', (('RF', NODAL),) )
-
-
-# 集合からXYデータの結果を取得するマクロ
-def E_ExtractXYFromField():
-  try:
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    import os.path
-    import tempXY
-    import extract
-    #
-    def SetNotFound(set_name):
-      print "Warnig: set " + set_name + " is not exist. Skipped"
-    odbkey = extract.SelectOdbKey()
-    print odbkey
-    odb = session.odbs[odbkey]
-    basename = os.path.basename(odbkey)
-    stem = os.path.splitext(basename)[0]
-    keys = []
-    items = extract.GetSetsAndKey()
-    for item in items:
-      print item
-      if ',' in item:
-        arr = item.split(',')
-        set_name = arr[0].strip()
-        if set_name in odb.rootAssembly.elementSets.keys() or set_name in odb.rootAssembly.nodeSets.keys():
-          tags = [x.strip() for x in arr[1:] ]
-        else:
-          SetNotFound(set_name)
-          tags = [] # empty list ==> to skip XYFromField call.
-      else:
-        set_name = item
-        if item in odb.rootAssembly.elementSets.keys():
-          tags = ['S11']
-        elif item in odb.rootAssembly.nodeSets.keys():
-          tags = ['U']
-        else:
-          SetNotFound(set_name)
-          tags = [] # empty list ==> to skip XYFromField call.
-      for tag in tags:
-        print set_name + ':' + tag
-        extract.XYFromField(odb, set_name, tag)
-        res = tempXY.AddPrefix(set_name)
-        for k in res:
-          keys.append(k)
-    rpt = getInput("Enter basename of rpt filename",stem)
-    if rpt == None:
-      print "rpt出力はキャンセルされました"
-      return
-    targets = []
-    for key in keys:
-      targets.append( session.xyDataObjects[key] )
-    session.writeXYReport(fileName=rpt + '.rpt', appendMode=OFF, xyData=tuple(targets))
-  except Exception as e:
-    print e.message
-    raise
-
-
-# 集合からXYデータの結果を取得するマクロ
-def E_ExtractXYFromFieldWithSum():
-  try:
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    import os.path
-    import tempXY
-    import extract
-    #
-    def SetNotFound(set_name):
-      print "Warnig: set " + set_name + " is not exist. Skipped"
-    odbkey = extract.SelectOdbKey()
-    print odbkey
-    odb = session.odbs[odbkey]
-    basename = os.path.basename(odbkey)
-    stem = os.path.splitext(basename)[0]
-    keys = []
-    items = extract.GetSetsAndKey()
-    for item in items:
-      print item
-      if ',' in item:
-        arr = item.split(',')
-        set_name = arr[0].strip()
-        if set_name in odb.rootAssembly.elementSets.keys() or set_name in odb.rootAssembly.nodeSets.keys():
-          tags = [x.strip() for x in arr[1:] ]
-        else:
-          SetNotFound(set_name)
-          tags = [] # empty list ==> to skip XYFromField call.
-      else:
-        set_name = item
-        if item in odb.rootAssembly.elementSets.keys():
-          tags = ['S11']
-        elif item in odb.rootAssembly.nodeSets.keys():
-          tags = ['U']
-        else:
-          SetNotFound(set_name)
-          tags = [] # empty list ==> to skip XYFromField call.
-      for tag in tags:
-        print set_name + ':' + tag
-        extract.XYFromField(odb, set_name, tag)
-        #res = tempXY.AddPrefix(set_name)
-        targets = []
-        for xy in session.xyDataObjects.keys():
-          if xy[0] == '_':
-            targets.append(session.xyDataObjects[xy])
-        res = sum(targets)
-        session.xyDataObjects.changeKey(res.name, set_name)
-        RemoveTempXYs()
-        keys.append(set_name)
-    rpt = getInput("Enter basename of rpt filename",stem)
-    if rpt == None:
-      print "rpt出力はキャンセルされました"
-      return
-    targets = []
-    for key in keys:
-      targets.append( session.xyDataObjects[key] )
-    session.writeXYReport(fileName=rpt + '.rpt', appendMode=OFF, xyData=tuple(targets))
-  except Exception as e:
-    print e.message
-    raise
-
-
-def C_ResultU3():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    session.viewports[session.currentViewportName].odbDisplay.setPrimaryVariable(
-        variableLabel='U', outputPosition=NODAL, refinement=(COMPONENT, 'U3'))
-
-def D_LegendBack2White():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    session.viewports[session.currentViewportName].viewportAnnotationOptions.setValues(
-        legendBackgroundStyle=MATCH, compass=OFF)
-
-
-def A_Z_ModelVisualSetup():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    session.graphicsOptions.setValues(backgroundStyle=SOLID, 
-        backgroundColor='#FFFFFF')
-    session.viewports[session.currentViewportName].viewportAnnotationOptions.setValues(triad=OFF, 
-        legend=OFF, title=OFF, state=OFF, annotations=OFF, compass=OFF)
-    session.viewports[session.currentViewportName].enableMultipleColors()
-    session.viewports[session.currentViewportName].setColor(initialColor='#BDBDBD')
-    cmap = session.viewports[session.currentViewportName].colorMappings['Material']
-    cmap.updateOverrides(overrides={'RC_FCK30':(True, '#D6D6D6', 'Default', 
-        '#D6D6D6'), 'STEEL':(True, '#777777', 'Default', '#777777')})
-    session.viewports[session.currentViewportName].setColor(colorMapping=cmap)
-    session.viewports[session.currentViewportName].disableMultipleColors()
-    session.viewports[session.currentViewportName].odbDisplay.commonOptions.setValues(
-        visibleEdges=FEATURE)
-
 def M_SetupRailConnectors():
     import section
     import regionToolset
@@ -1077,7 +955,6 @@ def M_SetupRailConnectors():
       csa = a.SectionAssignment(sectionName='Slipper2RailSpring', region=region)
       a.ConnectorOrientation(region=csa.getSet(), localCsys1=a.datums[1])
 
-
 def M_Rail60kg():
     import section
     import regionToolset
@@ -1099,53 +976,22 @@ def M_Rail60kg():
     currentViewport = session.viewports[session.currentViewportName]
     modelName = currentViewport.displayedObject.modelName
     m = mdb.models[modelName]
-    m.IProfile(name='Rail60kgSection', l=0.0778, h=0.174, 
+    m.IProfile(name='Rail60kgSection', l=0.0778, h=0.174,
         b1=0.145, b2=0.065, t1=0.021, t2=0.045, t3=0.0165)
-    m.BeamSection(name='Rail60kg', 
-        integration=DURING_ANALYSIS, poissonRatio=0.0, 
-        profile='Rail60kgSection', material='Steel', temperatureVar=LINEAR, 
+    m.BeamSection(name='Rail60kg',
+        integration=DURING_ANALYSIS, poissonRatio=0.0,
+        profile='Rail60kgSection', material='Steel', temperatureVar=LINEAR,
         consistentMassMatrix=False)
 
-
 def O_AbsRainbow():
-    session.Spectrum(name="AbsRaiwbow24", colors =('#FF0000', '#FF5C00', '#FFB900', 
-        '#E7FF00', '#8BFF00', '#2EFF00', '#00FF2E', '#00FF8B', '#00FFE7', 
-        '#00B9FF', '#005CFF', '#0000FF', '#0000FF', '#005CFF', '#00B9FF', 
-        '#00FFE7', '#00FF8B', '#00FF2E', '#2EFF00', '#8BFF00', '#E7FF00', 
+    session.Spectrum(name="AbsRaiwbow24", colors =('#FF0000', '#FF5C00', '#FFB900',
+        '#E7FF00', '#8BFF00', '#2EFF00', '#00FF2E', '#00FF8B', '#00FFE7',
+        '#00B9FF', '#005CFF', '#0000FF', '#0000FF', '#005CFF', '#00B9FF',
+        '#00FFE7', '#00FF8B', '#00FF2E', '#2EFF00', '#8BFF00', '#E7FF00',
         '#FFB900', '#FF5C00', '#FF0000', ))
-    session.Spectrum(name="AbsRainbow12", colors =('#FF0000', '#FFB900', '#E7FF00', 
-        '#2EFF00', '#00FFE7', '#0000FF', '#0000FF', '#00FFE7', '#2EFF00', 
+    session.Spectrum(name="AbsRainbow12", colors =('#FF0000', '#FFB900', '#E7FF00',
+        '#2EFF00', '#00FFE7', '#0000FF', '#0000FF', '#00FFE7', '#2EFF00',
         '#E7FF00', '#FFB900', '#FF0000', ))
-
-
-def plotLoadingArrow(arrowName, x, y, z, dx, dy, dz, ox, oy, caption=""):
-    import extract
-    odb = extract.currentOdb()
-    cvp = extract.cvp()
-    ud = odb.userData
-    if arrowName in ud.annotations.keys():
-      del ud.annotations[arrowName]
-    a = ud.Arrow(
-        name=arrowName,
-        startAnchor=(x, y, z),
-        startPoint=(ox, oy),
-        endAnchor=(x, y, z),
-        color='#FF0000',
-        lineThickness=THIN) # VERY_THIN, THIN, MEDIUM, THICK
-    cvp.plotAnnotation(annotation=a)
-    if caption != "":
-      textName = arrowName+'_Cap'
-      if textName in ud.annotations.keys():
-        del ud.annotations[textName]
-      t = ud.Text(
-        name=textName,
-        text=caption,
-        offset=(ox, oy),
-        anchor=(x + dx, y + dy, z + dz),
-        referencePoint=BOTTOM_CENTER,
-        justification=CENTER)
-      cvp.plotAnnotation(annotation=t)
-
 
 def O_PlotTrainLoad():
   try:
@@ -1206,8 +1052,6 @@ def O_PlotTrainLoad():
     print e.message
     raise
 
-
-
 def O_PlotLoadArrowToNset():
   try:
     import extract
@@ -1242,7 +1086,6 @@ def O_PlotLoadArrowToNset():
   except Exception as e:
     print e.message
     raise
-
 
 def O_LiveLoadStress():
   import visualization
@@ -1312,6 +1155,65 @@ def O_LiveLoadResults():
     sessionField = sessionFrame.FieldOutput(name='U',    description='Spatial displacement', field=u)
     sessionField = sessionFrame.FieldOutput(name='UR',   description='Rotational displacement', field=ur)
 
+# 節点の結果を出力するマクロ
+def X_NOT_YET_ExtractHistoryFromFieldByNset():
+  import visualization
+  import xyPlot
+  import displayGroupOdbToolset as dgo
+  #from extract import SelectOdb, GetElsets, UniaxialGaugeStress
+  import os.path
+  import extract
+  import tempXY
+  odbkey = extract.SelectOdbKey()
+  print odbkey
+  odb = session.odbs[odbkey]
+  basename = os.path.basename(odbkey)
+  stem = os.path.splitext(basename)[0]
+  keys = []
+  nsets = extract.GetNsets()
+  for nset in nsets:
+    print nset
+    n = nset.find(' ')
+    if ' ' in nset:
+      arr = nset.split()
+      set_name = arr[0]
+      tags = arr[1:]
+    else:
+      set_name = nset
+      tags = ['U1']
+    for tag in tags:
+      print set_name + ':' + tag
+      extract.XYFromField(odb, set_name, tag, NODAL)
+      res = tempXY.AddPrefix(set_name)
+      for k in res:
+        keys.append(k)
+  rpt = getInput("Enter basename of rpt filename",stem)
+  if rpt == None:
+    print "rpt出力はキャンセルされました"
+    return
+  targets = []
+  for key in keys:
+    targets.append( session.xyDataObjects[key] )
+  session.writeXYReport(fileName=rpt + '.rpt', appendMode=OFF, xyData=tuple(targets))
+
+def A_Z_ModelVisualSetup():
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    session.graphicsOptions.setValues(backgroundStyle=SOLID, 
+        backgroundColor='#FFFFFF')
+    session.viewports[session.currentViewportName].viewportAnnotationOptions.setValues(triad=OFF, 
+        legend=OFF, title=OFF, state=OFF, annotations=OFF, compass=OFF)
+    session.viewports[session.currentViewportName].enableMultipleColors()
+    session.viewports[session.currentViewportName].setColor(initialColor='#BDBDBD')
+    cmap = session.viewports[session.currentViewportName].colorMappings['Material']
+    cmap.updateOverrides(overrides={'RC_FCK30':(True, '#D6D6D6', 'Default', 
+        '#D6D6D6'), 'STEEL':(True, '#777777', 'Default', '#777777')})
+    session.viewports[session.currentViewportName].setColor(colorMapping=cmap)
+    session.viewports[session.currentViewportName].disableMultipleColors()
+    session.viewports[session.currentViewportName].odbDisplay.commonOptions.setValues(
+        visibleEdges=FEATURE)
+
 def Z_TMP20201207_View4():
     import visualization
     import xyPlot
@@ -1322,33 +1224,6 @@ def Z_TMP20201207_View4():
         -14.612, -1.6631, 3.7516), viewOffsetX=0, viewOffsetY=0, autoFit=OFF)
 
 
-def F_SelectModes():
-  try:
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    import extract
-    odb = extract.currentOdb()
-    #odbName=session.viewports[session.currentViewportName].odbDisplay.name
-    #session.odbData[odbName].setValues(activeFrames=(('Freq', ('1:15:7', )), ))
-    modes = getInput("Input Mode numbers with space separated")
-    if modes == '':
-      return
-    nm = odb.steps.values()[0].name
-    #print nm
-    #print modes
-    lst = [ x for x in modes.split(' ') ]
-    #print lst
-    tpl = tuple(lst)
-    #print tpl
-    odbName=session.viewports[session.currentViewportName].odbDisplay.name
-    session.odbData[odbName].setValues(activeFrames=((nm, tpl), ))
-    #
-  except Exception as e:
-    print e.message
-    raise
-
-
 def __template():
     try:
       pass
@@ -1357,12 +1232,74 @@ def __template():
       raise
 
 
-def AA_View4Deform():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    session.View(name='User-4', nearPlane=6508.9, farPlane=15050, width=7663.3, 
-        height=4375.9, projection=PARALLEL, cameraPosition=(5878.1, 4197.6, 
-        8612.1), cameraUpVector=(-0.37389, 0.73454, -0.56626), cameraTarget=(
-        320.55, -214.08, -17.911), viewOffsetX=0, viewOffsetY=0, autoFit=OFF)
+def plotLoadingArrow(arrowName, x, y, z, dx, dy, dz, ox, oy, caption=""):
+    import extract
+    odb = extract.currentOdb()
+    cvp = extract.cvp()
+    ud = odb.userData
+    if arrowName in ud.annotations.keys():
+      del ud.annotations[arrowName]
+    a = ud.Arrow(
+        name=arrowName,
+        startAnchor=(x, y, z),
+        startPoint=(ox, oy),
+        endAnchor=(x, y, z),
+        color='#FF0000',
+        lineThickness=THIN) # VERY_THIN, THIN, MEDIUM, THICK
+    cvp.plotAnnotation(annotation=a)
+    if caption != "":
+      textName = arrowName+'_Cap'
+      if textName in ud.annotations.keys():
+        del ud.annotations[textName]
+      t = ud.Text(
+        name=textName,
+        text=caption,
+        offset=(ox, oy),
+        anchor=(x + dx, y + dy, z + dz),
+        referencePoint=BOTTOM_CENTER,
+        justification=CENTER)
+      cvp.plotAnnotation(annotation=t)
+
+def testGetVar():
+  def test_eq(key, ans, pos=None):
+    res = extract.getVar(key, pos)
+    if res == ans:
+      print 'OK (' + key + ')'
+    else:
+      print 'NG (' + key + ')'
+      print 'expected:'
+      print ans
+      print 'but:'
+      print res
+  test_eq('Mises', (('S', INTEGRATION_POINT, ((INVARIANT, 'Mises'),)),),)
+  test_eq('LE.Max. Principal', (('LE', INTEGRATION_POINT, ((INVARIANT, 'Max. Principal'),)),) )
+  test_eq('S11', (('S', INTEGRATION_POINT, ((COMPONENT, 'S11'),)),) )
+  test_eq('LE11', (('LE', INTEGRATION_POINT, ((COMPONENT, 'LE11'),)),) )
+  test_eq('LE.LE11', (('LE', ELEMENT_NODAL, ((COMPONENT, 'LE11'),)),) , ELEMENT_NODAL)
+  test_eq('UR1', (('UR', NODAL, ((COMPONENT, 'UR1'),)),) )
+  test_eq('U1', (('U', NODAL, ((COMPONENT, 'U1'),)),) )
+  test_eq('RF', (('RF', NODAL),) )
+
+def checkPath():
+  msg = ""
+  import sys
+  for p in sys.path:
+    msg += p + "\n"
+  getInput(msg)
+
+#def CheckImport():
+#  import tempXY
+  #####
+  #import extract
+  #res = extract.GetElsets()
+  #if res is None:
+  #  getInput("None")
+  #else:
+  #  msg = ""
+  #  for i in res:
+  #    msg += i + "\n"
+  #  getInput(msg)
+
+
+
 
