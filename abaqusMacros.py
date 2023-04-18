@@ -943,6 +943,12 @@ def O_AbsRainbow():
         '#2EFF00', '#00FFE7', '#0000FF', '#0000FF', '#00FFE7', '#2EFF00',
         '#E7FF00', '#FFB900', '#FF0000', ))
 
+def O_GotoRangeStep():
+  import extract
+  odb = extract.currentOdb()
+  frame_id = len(odb.steps['Session Step'].frames) - 1
+  extract.currentViewport().odbDisplay.setFrame(step='Session Step', frame=frame_id)
+
 def O_PlotTrainLoad():
   try:
     import extract
