@@ -13,7 +13,6 @@ import __main__
 
 def BA_RotateX90Neg():
     try:
-      import visualization
       import extract
       extract.cvp().view.rotate(xAngle=-90, yAngle=0, zAngle=0, mode=MODEL)
     except Exception as e:
@@ -21,37 +20,24 @@ def BA_RotateX90Neg():
       raise
 
 def BA_RotateZ180():
-    import visualization
     import extract
     extract.cvp().view.rotate(xAngle=0, yAngle=0, zAngle=180, mode=MODEL)
 
 def BB_Back2White():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     session.graphicsOptions.setValues(backgroundStyle=SOLID, 
         backgroundColor='#FFFFFF')
 
 def BB_Back2Gradation():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     session.graphicsOptions.setValues(backgroundStyle=GRADIENT,
         backgroundColor='#000054',
         backgroundBottomColor='#7A7A90')
 
 def BB_Back2Original():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     session.graphicsOptions.setValues(backgroundStyle=GRADIENT,
         backgroundColor='#1B2D46',
         backgroundBottomColor='#A3B1C6')
 
 def BD_View4Deform():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     session.View(name='User-4', nearPlane=6508.9, farPlane=15050, width=7663.3, 
         height=4375.9, projection=PARALLEL, cameraPosition=(5878.1, 4197.6, 
         8612.1), cameraUpVector=(-0.37389, 0.73454, -0.56626), cameraTarget=(
@@ -59,7 +45,6 @@ def BD_View4Deform():
 
 #
 def BP_RemoveAllXY():
-    import xyPlot
     for xy in session.xyDataObjects.keys():
       del session.xyDataObjects[xy]
 
@@ -68,18 +53,12 @@ def BP_ClearAllXY():
   BP_RemoveAllXY()
 
 def BT_AddPrefixToTempXYandReturn():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     import extract
     BT_AddPrefixToTempXY()
     session.viewports[session.currentViewportName].odbDisplay.display.setValues(plotState=(UNDEFORMED, ))
     session.viewports[session.currentViewportName].setValues(displayedObject=extract.currentOdb())
 
 def BT_AddPrefixToTempXY():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     pre = getInput('Enter Prefix')
     for xy in session.xyDataObjects.keys():
       if xy[0] == '_':
@@ -88,9 +67,6 @@ def BT_AddPrefixToTempXY():
         session.xyDataObjects.changeKey(xy, pre + xy)
 
 def BT_RemoveTempXYs():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     for xy in session.xyDataObjects.keys():
       if xy[0] == '_':
         del session.xyDataObjects[xy]
@@ -100,16 +76,10 @@ def C_Precision4():
     mdb.models[0].sketches['__profile__'].sketchOptions.setValues(decimalPlaces=4)
 
 def C_ResultU3():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     session.viewports[session.currentViewportName].odbDisplay.setPrimaryVariable(
         variableLabel='U', outputPosition=NODAL, refinement=(COMPONENT, 'U3'))
 
 def D_DeformAnimate():
-  import visualization
-  import xyPlot
-  import displayGroupOdbToolset as dgo
   #Get User Input
   ans=getInput("Enter Scale Factor (default:100)")
   if ans=="":
@@ -131,9 +101,6 @@ def D_DeformAnimate():
   session.animationController.play(duration=UNLIMITED)
 
 def D_ColorSetting():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     session.viewports[session.currentViewportName].enableMultipleColors()
     session.viewports[session.currentViewportName].setColor(initialColor='#BDBDBD')
     cmap = session.viewports[session.currentViewportName].colorMappings['Material']
@@ -143,18 +110,12 @@ def D_ColorSetting():
     session.viewports[session.currentViewportName].disableMultipleColors()
 
 def D_LegendBack2White():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     session.viewports[session.currentViewportName].viewportAnnotationOptions.setValues(
         legendBackgroundStyle=MATCH, compass=OFF)
 
 def D_CreateRangeStepForNB():
     # 防音壁の計算での応力範囲ステップを作成し選択する．
     # 計算にはReturnステップが必要．
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     #: ---- Creating Field Output From Frames ----
     #odbFullPath = 'D:/DATA/Projects/H27-NB/Separate/ana/RF2/RF2.odb'
     keys = session.odbs.keys()
@@ -187,9 +148,6 @@ def D_CreateRangeStepForNB():
 # 集合からXYデータの結果を取得するマクロ
 def E_ExtractXYFromField():
   try:
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     import os.path
     import tempXY
     import extract
@@ -304,13 +262,10 @@ def E_ExtractXYFromFieldWithSum():
     raise
 
 def E_ExtractStressHistoryFromFieldByElset():
-  import visualization
-  import xyPlot
-  import displayGroupOdbToolset as dgo
-  #from extract import SelectOdb, GetElsets, UniaxialGaugeStress
   import os.path
   import extract
   import tempXY
+  from abaqus import session
   odbkey = extract.SelectOdbKey()
   print(odb_key)
   odb = session.odbs[odbkey]
@@ -961,23 +916,7 @@ def M_SetupRailConnectors():
       a.ConnectorOrientation(region=csa.getSet(), localCsys1=a.datums[1])
 
 def M_Rail60kg():
-    import section
-    import regionToolset
-    import displayGroupMdbToolset as dgm
-    import part
-    import material
-    import assembly
-    import optimization
-    import step
-    import interaction
-    import load
-    import mesh
-    import job
-    import sketch
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
-    import connectorBehavior
+    import extract
     currentViewport = session.viewports[session.currentViewportName]
     modelName = currentViewport.displayedObject.modelName
     m = mdb.models[modelName]
@@ -1093,9 +1032,6 @@ def O_PlotLoadArrowToNset():
     raise
 
 def O_LiveLoadStress():
-  import visualization
-  import xyPlot
-  import displayGroupOdbToolset as dgo
   import extract
   from textRepr import prettyPrint as pp
   
@@ -1122,9 +1058,6 @@ def O_LiveLoadStress():
     sessionField = sessionFrame.FieldOutput(name='U',    description='Spatial displacement', field=u)
 
 def O_LiveLoadResults():
-  import visualization
-  import xyPlot
-  import displayGroupOdbToolset as dgo
   import extract
   from textRepr import prettyPrint as pp
   
@@ -1162,10 +1095,6 @@ def O_LiveLoadResults():
 
 # 節点の結果を出力するマクロ
 def X_NOT_YET_ExtractHistoryFromFieldByNset():
-  import visualization
-  import xyPlot
-  import displayGroupOdbToolset as dgo
-  #from extract import SelectOdb, GetElsets, UniaxialGaugeStress
   import os.path
   import extract
   import tempXY
@@ -1202,9 +1131,6 @@ def X_NOT_YET_ExtractHistoryFromFieldByNset():
   session.writeXYReport(fileName=rpt + '.rpt', appendMode=OFF, xyData=tuple(targets))
 
 def Z_ModelVisualSetup():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     session.graphicsOptions.setValues(backgroundStyle=SOLID, 
         backgroundColor='#FFFFFF')
     session.viewports[session.currentViewportName].viewportAnnotationOptions.setValues(triad=OFF, 
@@ -1220,9 +1146,6 @@ def Z_ModelVisualSetup():
         visibleEdges=FEATURE)
 
 def Z_TMP20201207_View4():
-    import visualization
-    import xyPlot
-    import displayGroupOdbToolset as dgo
     session.View(name='User-4', nearPlane=68.038, farPlane=103.15, width=8.9694, 
         height=5.3688, projection=PARALLEL, cameraPosition=(45.302, -61.577, 
         26.875), cameraUpVector=(-0.4029, 0.4029, 0.82179), cameraTarget=(
@@ -1267,6 +1190,7 @@ def plotLoadingArrow(arrowName, x, y, z, dx, dy, dz, ox, oy, caption=""):
 
 def testGetVar():
   def test_eq(key, ans, pos=None):
+    import extract
     res = extract.getVar(key, pos)
     if res == ans:
       print('OK (' + key + ')')
