@@ -1117,6 +1117,8 @@ def X_NOT_YET_ExtractHistoryFromFieldByNset():
   stem = os.path.splitext(basename)[0]
   keys = []
   nsets = extract.GetNsets()
+  if nsets is None:
+    return
   for nset in nsets:
     print(nset)
     n = nset.find(' ')
