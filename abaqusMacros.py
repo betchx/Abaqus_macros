@@ -1040,11 +1040,11 @@ def O_PlotLoadArrowToNset():
 def O_LiveLoadStress():
   import extract
   from textRepr import prettyPrint as pp
-  
+
   def getRes(frame):
     fo = frame.fieldOutputs
     return (fo['S'], fo['U'])
-  
+
   #: ---- Creating Field Output From Frames ----
   odb = extract.currentOdb()
   out = session.ScratchOdb(odb=odb)
@@ -1066,11 +1066,11 @@ def O_LiveLoadStress():
 def O_LiveLoadResults():
   import extract
   from textRepr import prettyPrint as pp
-  
+
   def getRes(frame):
     fo = frame.fieldOutputs
     return (fo['RF'], fo['RM'], fo['S'], fo['SF'], fo['SM'], fo['U'], fo['UR'])
-  
+
   #: ---- Creating Field Output From Frames ----
   odb = extract.currentOdb()
   out = session.ScratchOdb(odb=odb)
