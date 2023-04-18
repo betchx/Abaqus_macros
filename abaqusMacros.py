@@ -171,10 +171,16 @@ def C_Precision4():
     mdb.models[0].sketches['__profile__'].sketchOptions.setValues(decimalPlaces=4)
 
 def A_RotateX90Neg():
-    import extract
-    extract.cvp().view.rotate(xAngle=-90, yAngle=0, zAngle=0, mode=MODEL)
+    try:
+      import visualization
+      import extract
+      extract.cvp().view.rotate(xAngle=-90, yAngle=0, zAngle=0, mode=MODEL)
+    except Exception as e:
+      print e.message
+      raise
 
 def A_RotateZ180():
+    import visualization
     import extract
     extract.cvp().view.rotate(xAngle=0, yAngle=0, zAngle=180, mode=MODEL)
 
@@ -1281,6 +1287,9 @@ def Z_TMP20201207_View4():
 
 def F_SelectModes():
   try:
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
     import extract
     odb = extract.currentOdb()
     #odbName=session.viewports[session.currentViewportName].odbDisplay.name
@@ -1289,20 +1298,18 @@ def F_SelectModes():
     if modes == '':
       return
     nm = odb.steps.values()[0].name
-    print nm
-    print modes
+    #print nm
+    #print modes
     lst = [ x for x in modes.split(' ') ]
-    print lst
+    #print lst
     tpl = tuple(lst)
-    print tpl
+    #print tpl
     odbName=session.viewports[session.currentViewportName].odbDisplay.name
     session.odbData[odbName].setValues(activeFrames=((nm, tpl), ))
     #
   except Exception as e:
     print e.message
     raise
-
-
 
 
 def __template():
@@ -1312,4 +1319,13 @@ def __template():
       print e.message
       raise
 
+
+def AA_View4Deform():
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    session.View(name='User-4', nearPlane=6508.9, farPlane=15050, width=7663.3, 
+        height=4375.9, projection=PARALLEL, cameraPosition=(5878.1, 4197.6, 
+        8612.1), cameraUpVector=(-0.37389, 0.73454, -0.56626), cameraTarget=(
+        320.55, -214.08, -17.911), viewOffsetX=0, viewOffsetY=0, autoFit=OFF)
 
