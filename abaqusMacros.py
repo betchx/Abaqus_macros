@@ -1412,7 +1412,7 @@ def E_ElementCenter():
     #‘‚«o‚µ
     with open(filename,"w") as out:
       out.write("Instance, label, x, y, z\n")
-      out.writelines(",".join((e.instanceName, str(e.label), str(x), str(y), str(z))) for e,x,y,z in zip(elements, xs, ys, zs))
+      out.writelines(",".join((e.instanceName, str(e.label), str(x), str(y), str(z),"\n")) for e,x,y,z in zip(elements, xs, ys, zs))
   except Exception as e:
     print(e)
 
