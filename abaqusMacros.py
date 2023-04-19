@@ -1386,3 +1386,33 @@ def C_createFO_from_EID():
     c, ax, t = info
     print("Error:",ax.message)
 
+
+
+
+def E_ElementCenter():
+  try:
+    import extract
+    # 準備： 現在アクティブなOdbを対象に処理
+    odb = extract.currentOdb()
+    asm = odb.rootAssembly
+    stem = extract.currentOdbStem()
+    # 対象となる要素集合のリスト取得
+    elsets = extract.GetElsets(odb) # type:list[OdbSet]
+    # 出力先を取得
+    default_name = stem + "_" + "_".join([elset.name for elset in elsets]) + ".csv"
+    filename = getInput("出力先のファイル名", default_name)
+    # フラット化して要素のリストを作成する．
+    elements = [e for elset in elsets for e in elset.elements]
+    # 節点リストのリストを作成
+    nodesList = [[asm.instances[e.instanceName].getNodeFromLabel(nid) for nid in e.connectivity] for e in elements]
+    # 節点座標の平均を求める
+    xs = [sum([n.coordinates[0] for n in nodes])/len(nodes) for nodes in nodesList]
+    ys = [sum([n.coordinates[1] for n in nodes])/len(nodes) for nodes in nodesList]
+    zs = [sum([n.coordinates[2] for n in nodes])/len(nodes) for nodes in nodesList]
+    #書き出し
+    with open(filename,"w") as out:
+      out.write("Instance, label, x, y, z\n")
+      out.writelines(",".join((e.instanceName, str(e.label), str(x), str(y), str(z))) for e,x,y,z in zip(elements, xs, ys, zs))
+  except Exception as e:
+    print(e)
+
