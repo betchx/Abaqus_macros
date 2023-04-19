@@ -1384,5 +1384,5 @@ def C_createFO_from_EID():
     print(e.message)
     info  = sys.exc_info()
     c, ax, t = info
-    print "Error:",ax.message
+    print("Error:",ax.message)
 
