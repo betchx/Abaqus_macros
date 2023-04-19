@@ -274,12 +274,12 @@ def E_ExtractStressHistoryFromFieldByElset():
   import tempXY
   from abaqus import session
   odbkey = extract.SelectOdbKey()
-  print(odb_key)
+  print(odbkey)
   odb = session.odbs[odbkey]
   basename = os.path.basename(odbkey)
   stem = os.path.splitext(basename)[0]
   keys = []
-  elsets = extract.GetElsets()
+  elsets = extract.GetElsetNameList()
   for elset in elsets:
     extract.XYFromField(odb, elset, "S11")
     res = tempXY.AddPrefix(elset)
@@ -1117,8 +1117,8 @@ def X_NOT_YET_ExtractHistoryFromFieldByNset():
   basename = os.path.basename(odbkey)
   stem = os.path.splitext(basename)[0]
   keys = []
-  nsets = extract.GetNsets()
-  if nsets is None:
+  nsets = extract.GetNsetNameList()
+  if len(nsets) == 0:
     return
   for nset in nsets:
     print(nset)
@@ -1235,7 +1235,7 @@ def checkPath():
 #  import tempXY
   #####
   #import extract
-  #res = extract.GetElsets()
+  #res = extract.GetElsetNameList()
   #if res is None:
   #  getInput("None")
   #else:
